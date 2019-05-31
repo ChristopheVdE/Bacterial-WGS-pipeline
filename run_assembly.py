@@ -108,7 +108,7 @@ elif analysis == "3" or analysis == "hybrid":
         /bin/bash -c "cd /home/Snakefiles/Illumina && snakemake; /home/Scripts/copy_log.sh"'
     os.system(short_read)
 #LONG READS: DEMULTIPLEXING---------------------------------------------------------------------------------
-    os.system('sh 01_demultiplex.sh '+MinIon+' '+Results+'/Long_reads '+threads)
+    os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+MinIon+' '+Results+'/Long_reads '+threads)
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
