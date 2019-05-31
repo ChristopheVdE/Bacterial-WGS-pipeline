@@ -51,7 +51,7 @@ You should now be able to execute the scripts by double clicking on them, after 
 ### The input screen
 The screen in which you need to input the path looks like this:
 
-![Screenshot](./Images/inputwindow.png)
+![Screenshot](./Extra/Images/inputwindow.png)
 
 1)	The place where you need to input the rawdata-location. These locations can easily be found by opening an explorer, navigating to the files and copying the path from there (most of the time the path will be displayed at the top of the screen). Please make sure that there are no spaces in the path to these locations.
 2)	A message displaying the paths/locations to the files. This message changes a little bit depending on the OS u are using
