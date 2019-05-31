@@ -18,7 +18,7 @@ import os
 #INPUT------------------------------------------------------------------------------------------------------
 #PATH CORRECTION--------------------------------------------------------------------------------------------
 
-#SAVING INPUT TO FILE---------------------------------------------------------------------------------------.
+#SAVING INPUT TO FILE---------------------------------------------------------------------------------------
 
 #SHORT READ SAMPLE LIST CREATION----------------------------------------------------------------------------
 def sample_list(Illumina):
@@ -43,6 +43,12 @@ if analysis == "1" or analysis == "short":
     print("\nShort read assembly selected.")
     Illumina = input("Input location of Illumina sample files here: \n")
     Results = input("Input location to store the results here : \n")
+#CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
+#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
+#SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
+#CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
+#COPY ILLUMINA SAMPLES TO RESULTS---------------------------------------------------------------------------
+#SHORT READS: RUN PIPELINE----------------------------------------------------------------------------------
 #===========================================================================================================
 
 #LONG READ ONLY ASSEMBLY====================================================================================
@@ -51,6 +57,12 @@ elif analysis == "2" or analysis == "long":
     print("\nLong read assembly selected.")
     MinIon = input("Input location of MinIon sample files here: \n")
     Results = input("Input location to store the results here : \n")
+#CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
+#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
+#SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
+#CREATE MINION SAMPLE LIST + WRITE TO FILE------------------------------------------------------------------
+#COPY MINION SAMPLES TO RESULTS-----------------------------------------------------------------------------
+#SHORT READS: RUN PIPELINE----------------------------------------------------------------------------------
 #===========================================================================================================
 
 #HYBRID ASSEMBLY============================================================================================
@@ -96,7 +108,7 @@ elif analysis == "3" or analysis == "hybrid":
         christophevde/ubuntu_bash:v2.2_stable \
         /home/Scripts/01_copy_rawdata.sh'
     os.system(copy)
-#SHORT READS: RUN PIPELINE----------------------------------------------------------------------------------
+#SHORT READS: TRIMMING & QC---------------------------------------------------------------------------------
     pwd = location = os.getcwd()
     short_read = 'docker run -it --rm \
         --name snakemake \
@@ -107,7 +119,7 @@ elif analysis == "3" or analysis == "hybrid":
         christophevde/snakemake:v2.3_stable \
         /bin/bash -c "cd /home/Snakefiles/Illumina && snakemake; /home/Scripts/copy_log.sh"'
     os.system(short_read)
-#LONG READS: DEMULTIPLEXING---------------------------------------------------------------------------------
+#LONG READS: DEMULTIPLEXING + TRIMMING----------------------------------------------------------------------
     os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+MinIon+' '+Results+'/Long_reads '+threads)
 #===========================================================================================================
 
