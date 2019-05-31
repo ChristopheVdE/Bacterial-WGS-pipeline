@@ -1,6 +1,12 @@
-# Pipeline for analysis of S.typhi with Illumina data
+# Whole genome sequencing pipeline for bacterial samples
 ## Introduction
-Containerised analysis pipeline for Salmonella thypi using Docker containers and the Snakemake tool.
+Three containerised assembly pipelines for whole genome assemblies of bacterial DNA controlled by one wrapper-script.
+  - short read assembly (Illumina reads)
+  - long read asembly (Oxford Nanopore: MinIon reads)
+  - hybrid assembly (Illumina reads combined with MinIon reads)
+  
+Tested on Salmonella thypi samples.
+
 ## Installation
 In order to run the pipeline, the following steps need to be preformed.
 ### Install Docker
@@ -32,7 +38,7 @@ In order to run the pipeline, the following steps need to be preformed.
  
 ## Pipeline
 ### Starting the pipeline
-In Order to start the pipeline you only really need 1 file ("get_environment.py") provided in this repository which you can execute through the command line. For those not familliar with a command line interface, there are 2 'auto-run scripts' provided, one for Windows users and one for Linux users:
+In Order to start the pipeline you only really need 1 file ("run_assembly.py") provided in this repository which you can execute through the command line. For those not familliar with a command line interface, there are 2 'auto-run scripts' provided, one for Windows users and one for Linux/MacOS users:
 
 - For Linux/ MacOS users: LINUX_run-pipeline.sh
 - For Windows users: WINDOWS_run-pipeline.cmd
@@ -65,7 +71,8 @@ When the analysis is complete you will get message displayed in the command line
 
 The other files found in this repository are the codes used to create the Docker images for the containers and the scripts that are loaded into these containers. You don't need these since the containers will automatically be downloaded and 'installed' when the pipeline is ran for the first time (download from Docker-HUB).
 
-### Preformed steps
+### Short read assembly
+#### Preformed steps
 The Pipline is controlled by Snakemake, which itself is being ran in a container. Snakemake will read the rules/steps specified in the Snakefile and chain them togheter in the correct order for the analysis. 
 
 Snakemake will preform the following steps durig the analysis. Each step is specified as a rule in the Snakefile and will be executed in a docker container created for that specific task:
@@ -80,8 +87,8 @@ Snakemake will preform the following steps durig the analysis. Each step is spec
     5) File renaming
     6) Use results in Pathogenwatch.com (manual step)
   
-### Results
-the resulting file structure should look like this, with all rawdata and analysis data grouped per sample. To make reviewing the QC a bit easier, the MultiQC results for the full run (all samples) are stored sepparatly under QC-MultiQC/date. The full log of the snakemake program can be found under Snakemake_logs.
+#### Results
+The resulting file structure should look like this, with all rawdata and analysis data grouped per sample. To make reviewing the QC a bit easier, the MultiQC results for the full run (all samples) are stored sepparatly under QC-MultiQC/date. The full log of the snakemake program can be found under Snakemake_logs.
 
       data
        |--Sample1
