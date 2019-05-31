@@ -10,6 +10,6 @@
 # Starting snakemake
 echo "\nStarting snakemake"
 cd "$(dirname "$BASH_SOURCE")"
-python3 ./get_environment_v2.2.py
+python3 ./run_assembly.py
 echo "done"
 # echo "Done\n"
