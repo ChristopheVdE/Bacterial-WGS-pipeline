@@ -9,8 +9,8 @@
 ###################################################################################
 
 #VALIDATE NR OF PARAMETERS---------------------------------------------------------
-threads=`cat /home/Pipeline/environment.txt | grep "threads="`
-threads=${threads#"threads="}
+Threads=`cat /home/Pipeline/environment.txt | grep "Threads="`
+Threads=${Threads#"Threads="}
 #----------------------------------------------------------------------------------
 
 #SPECIFY VARIABLES-----------------------------------------------------------------
@@ -23,7 +23,7 @@ threads=${threads#"threads="}
 dos2unix /home/Pipeline/sampleList.txt
 
 #RUNNING SPADES--------------------------------------------------------------------
-echo "Starting SPAdes with ${threads} threads"
+echo "Starting SPAdes with ${Threads} threads"
 for id in `cat /home/Pipeline/sampleList.txt`; do
 
 	#CREATE OUTPUTFOLDERS
@@ -45,7 +45,7 @@ for id in `cat /home/Pipeline/sampleList.txt`; do
 		/SPAdes-3.13.1-Linux/bin/spades.py --pe1-1 /home/Pipeline/${id}/02_Trimmomatic/${id}_L001_R1_001_P.fastq.gz \
 		--pe1-2 /home/Pipeline/${id}/02_Trimmomatic/${id}_L001_R2_001_P.fastq.gz \
 		--tmp-dir /home/SPAdes/temp/ \
-		-o /home/Pipeline/${id}/04_SPAdes -t ${threads};
+		-o /home/Pipeline/${id}/04_SPAdes -t ${Threads};
 		#RENAME AND MOVE RESULTS
 		cd /home/Pipeline/${id}/04_SPAdes
 		cp contigs.fasta /home/Pipeline/${id}/05_inputPathogenWatch/${id}.fasta

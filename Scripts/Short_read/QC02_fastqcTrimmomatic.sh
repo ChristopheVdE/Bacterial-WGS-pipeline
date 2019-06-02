@@ -13,8 +13,8 @@
 #-----------------------------------------------------------------------------------------------------------
 
 #VARIABLES--------------------------------------------------------------------------------------------------
-threads=`cat /home/Pipeline/environment.txt | grep "threads="`
-threads=${threads#"threads="}
+Threads=`cat /home/Pipeline/environment.txt | grep "Threads="`
+Threads=${Threads#"Threads="}
 # inputfolder = /home/Pipeline/data/${id}/02_Trimmomatic
 # outputFolder = /home/Pipeline/data/${id}/03_QC-Trimmomatic_Paired/QC_fastqc
 #-----------------------------------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ echo
 #-----------------------------------------------------------------------------------------------------------
 
 #RUN FASTQC-------------------------------------------------------------------------------------------------
-echo "Starting FastQC with ${threads} threads"
+echo "Starting FastQC with ${Threads} threads"
 for id in `cat /home/Pipeline/sampleList.txt`; do
      #CREATE OUTPUTFOLDER IF NOT EXISTS
      mkdir -p /home/Pipeline/${id}/03_QC-Trimmomatic_Paired/QC_FastQC
@@ -34,7 +34,7 @@ for id in `cat /home/Pipeline/sampleList.txt`; do
      for i in $(ls /home/Pipeline/${id}/02_Trimmomatic | grep _P.fastq.gz); do
           echo -e "STARTING FastQC on paired reads of ${i} \n";
           fastqc --extract \
-          -t ${threads} \
+          -t ${Threads} \
           -o /home/Pipeline/${id}/03_QC-Trimmomatic_Paired/QC_FastQC \
           /home/Pipeline/${id}/02_Trimmomatic/${i} \
           2>&1 | tee -a /home/Pipeline/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/stdout_err.txt ;

@@ -11,8 +11,8 @@
 #VARIABLES--------------------------------------------------------------------------------------------------
 # inputFolder = /home/Pipeline/${id}/00_Rawdata
 # outputFolder = /home/Pipeline/${id}/02_Trimmomatic
-threads=`cat /home/Pipeline/environment.txt | grep "threads="`
-threads=${threads#"threads="}
+Threads=`cat /home/Pipeline/environment.txt | grep "Threads="`
+Threads=${Threads#"Threads="}
 #-----------------------------------------------------------------------------------------------------------
 
 #TRIMMOMATIC PRE-START--------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ dos2unix /home/Pipeline/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 #RUN TRIMMOMATIC--------------------------------------------------------------------------------------------
-echo "Starting Trimmomatic with ${threads} threads"
+echo "Starting Trimmomatic with ${Threads} threads"
 for id in `cat /home/Pipeline/sampleList.txt`; do
 	#SPECIFY VARIABLES
 	# inputFolder=/home/Pipeline/${id}/00_Rawdata
@@ -41,7 +41,7 @@ for id in `cat /home/Pipeline/sampleList.txt`; do
 	for i in `cat /home/foldercontent4.txt`; do
 		echo -e "\nSTARTING ${i} \n";
 		java -jar /home/Trimmomatic-0.39/trimmomatic-0.39.jar  \
-		PE -threads ${threads} -phred33 -trimlog /home/Pipeline/${i}/02_Trimmomatic/trimlog.txt \
+		PE -threads ${Threads} -phred33 -trimlog /home/Pipeline/${i}/02_Trimmomatic/trimlog.txt \
 		/home/Pipeline/${i}/00_Rawdata/${i}_L001_R1_001.fastq.gz /home/Pipeline/${i}/00_Rawdata/${i}_L001_R2_001.fastq.gz \
 		/home/Pipeline/${i}/02_Trimmomatic/${i}_L001_R1_001_P.fastq.gz /home/Pipeline/${i}/02_Trimmomatic/${i}_L001_R1_001_U.fastq.gz \
 		/home/Pipeline/${i}/02_Trimmomatic/${i}_L001_R2_001_P.fastq.gz /home/Pipeline/${i}/02_Trimmomatic/${i}_L001_R2_001_U.fastq.gz \
