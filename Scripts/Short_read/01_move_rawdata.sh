@@ -10,7 +10,7 @@
 #FUNCTION--------------------------------------------------------------------------------------------------
 usage() {
 	errorcode=" \nERROR -> This script needs 1 parameters:\n
-		1: Analysis type\n";
+		1: Analysis type ('short' or 'hybrid')\n";
 	echo ${errorcode};
 	exit 1;
 }
@@ -25,23 +25,23 @@ Analysis=$1
 #-----------------------------------------------------------------------------------------------------------
 
 #INPUT AND OUTPUT FOLDER------------------------------------------------------------------------------------
-if Analysis == "short"; then
-	folder = "/Short_reads"
-elif Analysis == "hybrid"; then
-	folder = "/Hybrid/Short_reads"
+if "$Analysis" = "short"; then
+	folder="Short_reads"
+elif "$Analysis" = "hybrid"; then
+	folder="Hybrid/Short_reads"
 fi
 #-----------------------------------------------------------------------------------------------------------
 
 #FILE PREPARATION-------------------------------------------------------------------------------------------
 #Fix possible EOL errors in files to read
-dos2unix /home/rawdata/${folder}/sampleList.txt
+dos2unix -q /home/rawdata/${folder}/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 # copy the 00_Rawdata into the current analysis folder
-echo -e "\nMoving files, please wait"
+echo "\nMoving files, please wait"
 for id in `cat /home/rawdata/${folder}/sampleList.txt`; do
     mkdir -p /home/rawdata/${folder}/${id}/00_Rawdata
     cp -vrn /home/rawdata/${id}*.fastq.gz /home/rawdata/${folder}/${id}/00_Rawdata/ \
     2>&1 | tee -a /home/rawdata/${folder}/${id}/00_Rawdata/stdout.txt
 done    
-echo -e "Done\n"
+echo "Done\n"

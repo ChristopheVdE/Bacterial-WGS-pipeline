@@ -25,10 +25,10 @@ Analysis=$1
 #-----------------------------------------------------------------------------------------------------------
 
 #INPUT AND OUTPUT FOLDER------------------------------------------------------------------------------------
-if Analysis == "short"; then
-	folder = "/Short_reads"
-elif Analysis == "hybrid"; then
-	folder = "/Hybrid/Short_reads"
+if "$Analysis" = "short"; then
+	folder="Short_reads"
+elif echo "$Analysis" = "hybrid"; then
+	folder="Hybrid/Short_reads"
 fi
 #-----------------------------------------------------------------------------------------------------------
 

@@ -28,10 +28,10 @@ Threads=${2:-"1"}
 #-----------------------------------------------------------------------------------------------------------
 
 #INPUT AND OUTPUT FOLDER------------------------------------------------------------------------------------
-if Analysis == "short"; then
-	folder = "/Short_reads"
-elif Analysis == "hybrid"; then
-	folder = "/Hybrid/Short_reads"
+if "$Analysis" = "short"; then
+	folder="Short_reads"
+elif "$Analysis" = "hybrid"; then
+	folder="Hybrid/Short_reads"
 fi
 # inputFolder = /home/Pipeline/${folder}/${id}/00_Rawdata
 # outputFolder = /home/Pipeline/${folder}/${id}/02_Trimmomatic
