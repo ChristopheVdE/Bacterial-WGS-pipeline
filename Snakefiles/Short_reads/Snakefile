@@ -9,10 +9,17 @@
 # GET INFO FROM HOST----------------------------------------------------------------------------------------
 env = open("/home/Pipeline/environment.txt","r")
 for line in env.readlines():
-    # GET LOCATIONS-----------------------------------------------------------------------------------------
+# GET LOCATIONS---------------------------------------------------------------------------------------------
     if "Results_m=" in line:
         Results_m = line.replace("Results_m=",'').replace('\n','')
-        Results_m = Results_m+"/Short_reads"
+    if "Scripts_m" in line:
+        Scripts_m = line.replace("Scripts_m=",'').replace('\n','') + "/Short_read"
+    if "Analysis=" in line:
+        if "short" in line:
+            Analysis = "/Short_reads"
+        elif "hybrid" in line:
+            Analysis = "/Hybrid/Short_reads"
+    Results_m = Results_m + Analysis
 env.close()
 #-----------------------------------------------------------------------------------------------------------
 
@@ -55,6 +62,7 @@ rule fastqc_raw:
     shell:
         'docker run -it --rm \
         --name fastqc_raw \
+        -v "{Scripts_m}:/home/Scripts/:ro" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/fastqc:v2.2_stable \
         /home/Scripts/QC01_fastqcRawData.sh'
@@ -73,6 +81,7 @@ rule multiqc_raw:
     shell:
         'docker run -it --rm \
         --name multiqc_raw \
+        -v "{Scripts_m}:/home/Scripts/:ro" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/multiqc:v2.2_stable \
         /home/Scripts/QC01_multiqc_raw.sh'
@@ -93,6 +102,7 @@ rule Trimming:
     shell:
         'docker run -it --rm \
         --name trimmomatic \
+        -v "{Scripts_m}:/home/Scripts/:ro" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/trimmomatic:v2.2_stable \
         /home/Scripts/02_runTrimmomatic.sh'
@@ -111,6 +121,7 @@ rule fastqc_trimmed:
     shell:
         'docker run -it --rm \
         --name fastqc_trim \
+        -v "{Scripts_m}:/home/Scripts/:ro" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/fastqc:v2.2_stable \
         /home/Scripts/QC02_fastqcTrimmomatic.sh'
@@ -128,6 +139,7 @@ rule multiqc_trimmed:
     shell:
         'docker run -it --rm \
         --name multiqc_trim \
+        -v "{Scripts_m}:/home/Scripts/:ro" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/multiqc:v2.2_stable \
         /home/Scripts/QC02_multiqcTrimmomatic.sh'

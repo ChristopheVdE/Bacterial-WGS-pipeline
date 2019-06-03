@@ -100,7 +100,7 @@ if analysis == "1" or analysis == "short":
         if not os.path.exists(i):
             os.mkdir(i)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED & SAVE INPUT TO FILE-----------------------------------------------
-    loc = open(options["Results"]+"/Short_reads/environment.txt", mode="w")
+    loc = open(options["Results"]+"/environment.txt", mode="w")
     for key, value in correct_path(options).items():
         if not key == "Threads":
             loc.write(key+"="+value+"\n")
@@ -117,7 +117,7 @@ if analysis == "1" or analysis == "short":
         --name snakemake \
         --cpuset-cpus="0" \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "'+options["Results"]+"/Short_reads/"+':/home/Pipeline/" \
+        -v "'+options["Results"]+':/home/Pipeline/" \
         christophevde/snakemake:v2.2_stable \
         /bin/bash -c "cd /home/Snakemake/ && snakemake; /home/Scripts/copy_log.sh"'
 #SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE THE SAME-----------------------------------------
@@ -140,7 +140,7 @@ if analysis == "1" or analysis == "short":
         copy = 'docker run -it --rm \
             --name copy_rawdata \
             -v "'+options["Illumina"]+':/home/rawdata/" \
-            -v "'+options["Results"]+"/Short_reads/"+':/home/Pipeline/" \
+            -v "'+options["Results"]+':/home/Pipeline/" \
             christophevde/ubuntu_bash:v2.2_stable \
             /home/Scripts/01_copy_rawdata.sh'
         os.system(copy)
@@ -180,7 +180,7 @@ elif analysis == "3" or analysis == "hybrid":
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
     correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
-    loc = open(options["Results"]+"/Short_reads/environment.txt", mode="w")
+    loc = open(options["Results"]+"/environment.txt", mode="w")
     for key, value in options.items():
         if not key == "Threads":
             loc.write(key+"="+value+"\n")
@@ -196,7 +196,7 @@ elif analysis == "3" or analysis == "hybrid":
     copy = 'docker run -it --rm \
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
-        -v "'+options["Results_m"]+'/Short_reads:/home/Pipeline/" \
+        -v "'+options["Results_m"]+':/home/Pipeline/" \
         christophevde/ubuntu_bash:v2.2_stable \
         /home/Scripts/01_copy_rawdata.sh'
     os.system(copy)
@@ -207,7 +207,7 @@ elif analysis == "3" or analysis == "hybrid":
         --cpuset-cpus="0" \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "'+pwd+'/Snakefiles/:/home/Snakefiles:ro" \
-        -v "'+options["Results_m"]+'/Short_reads:/home/Pipeline/" \
+        -v "'+options["Results_m"]+':/home/Pipeline/" \
         christophevde/snakemake:v2.3_stable \
         /bin/bash -c "cd /home/Snakefiles/Illumina && snakemake; /home/Scripts/copy_log.sh"'
     os.system(short_read)
