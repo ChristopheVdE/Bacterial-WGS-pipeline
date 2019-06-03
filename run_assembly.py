@@ -17,19 +17,46 @@ import subprocess
 import string
 #===========================================================================================================
 
+#GENERAL====================================================================================================
+#FETCH OS-TYPE----------------------------------------------------------------------------------------------
+system=platform.platform()
+if "Windows" in system:
+    sys="Windows"
+    print("\nWindows based system detected ({})\n".format(system))
+    # check if HyperV is enabled (indication of docker Version, used to give specific tips on preformance increase)
+    HV = subprocess.Popen('powershell.exe get-service | findstr vmcompute', shell=True, stdout=subprocess.PIPE) 
+    for line in HV.stdout:  
+        if "Running" in line.decode("utf-8"):
+            HyperV="True" 
+        else: 
+            HyperV="False" 
+else:
+    sys="UNIX"
+    print("\nUNIX based system detected ({})\n".format(system))
+#FIND SCRIPTS FOLDER LOCATION
+options = {}
+options["Scripts"] = os.path.realpath(__file__) + "/Scripts"
+#===========================================================================================================
+
 #FUNCTIONS==================================================================================================
 #INPUT------------------------------------------------------------------------------------------------------
 #PATH CORRECTION--------------------------------------------------------------------------------------------
 def correct_path(options):
-    for key, value in options:
+    options_copy = options
+    options = {}
+    for key, value in options_copy.items():
+        options[key] = value
         if sys=="Windows":
+            print("\nConverting Windows paths for use in Docker:")
             for i in list(string.ascii_lowercase+string.ascii_uppercase):
+                options[key] = value
                 if value.startswith(i+":/"):
                     options[key+"_m"] = value.replace(i+":/","/"+i.lower()+"//").replace('\\','/')
                 elif value.startswith(i+":\\"):
                     options[key+"_m"] = value.replace(i+":\\","/"+i.lower()+"//").replace('\\','/')
+            #print(" - "+ key +" location ({}) changed to: {}".format(str(options[key][value]),str(options[key+"_m"][value])))
         else:
-            options[key+"m"] = options[key]
+            options[key+"_m"] = value
     return options
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
 
@@ -44,34 +71,88 @@ def sample_list(Illumina):
 #===========================================================================================================
 
 #ANALYSIS TYPE==============================================================================================
+#INPUT------------------------------------------------------------------------------------------------------
 print("ANALYSIS TYPE"+"="*67)
 print(" - For short read assembly, input: '1' or 'short' \
     \n - For long read assembly, input: '2' or 'long' \
     \n - For hybrid assembly, input: '3' or 'hybrid'")
 analysis = input("\nInput analysis type here: ")
 print("="*80)
+#SAVE INPUT-------------------------------------------------------------------------------------------------
+if analysis == "1" or "short":
+    options["Analysis"] = "short"
+elif analysis == "2" or "long":
+    options["Analysis"] = "long"
+elif analysis == "3" or "hybrid":
+    options["Analysis"] = "hybrid"
 #===========================================================================================================
 
 #SHORT READ ONLY ASSEMBLY===================================================================================
 if analysis == "1" or analysis == "short":
 #GET INPUT--------------------------------------------------------------------------------------------------
-    print("\nShort read assembly selected.")
-    Illumina = input("Input location of Illumina sample files here: \n")
-    Results = input("Input location to store the results here : \n")
+    print("\nSHORT READ ASSEMBLY"+"="*61+"\nOPTIONS"+"-"*73)
+    options["Illumina"] = input("Input location of Illumina sample files here: \n")
+    options["Results"] = input("Input location to store the results here \n")
+    options["Threads"] = str(input("Input number of threads here: \n"))
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
-#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
-#SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
+    folders = [options["Results"]+"/Short_reads",]
+    for i in folders:
+        if not os.path.exists(i):
+            os.mkdir(i)
+#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED & SAVE INPUT TO FILE-----------------------------------------------
+    loc = open(options["Results"]+"/Short_reads/environment.txt", mode="w")
+    for key, value in correct_path(options).items():
+        if not key == "Threads":
+            loc.write(key+"="+value+"\n")
+        else:
+            loc.write(key+"="+value)  
+    loc.close()
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
-#COPY ILLUMINA SAMPLES TO RESULTS---------------------------------------------------------------------------
-#SHORT READS: RUN PIPELINE----------------------------------------------------------------------------------
+    file = open(options["Results"]+"/Short_reads/sampleList.txt",mode="w")
+    for i in sample_list(options["Illumina"]):
+        file.write(i+"\n")
+    file.close()
+#SHORT READS: SNAKEMAKE CMD----------------------------------------------------------------------------------
+    snake = 'docker run -it --rm \
+        --name snakemake \
+        --cpuset-cpus="0" \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "'+options["Results"]+"/Short_reads/"+':/home/Pipeline/" \
+        christophevde/snakemake:v2.2_stable \
+        /bin/bash -c "cd /home/Snakemake/ && snakemake; /home/Scripts/copy_log.sh"'
+#SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE THE SAME-----------------------------------------
+    if options["Illumina"] == options["Results"]:
+        move = 'docker run -it --rm \
+            --name copy_rawdata \
+            -v "'+options["Illumina"]+':/home/rawdata/" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /home/Scripts/01_move_rawdata.sh'
+        os.system(move)
+        os.system(snake)
+        delete = 'docker run -it --rm \
+            --name copy_rawdata \
+            -v "'+options["Illumina"]+':/home/rawdata/" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /home/Scripts/02_delete_rawdata.sh'
+        os.system(delete)
+    #SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE DIFFERENT---------------------------------------
+    else:
+        copy = 'docker run -it --rm \
+            --name copy_rawdata \
+            -v "'+options["Illumina"]+':/home/rawdata/" \
+            -v "'+options["Results"]+"/Short_reads/"+':/home/Pipeline/" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /home/Scripts/01_copy_rawdata.sh'
+        os.system(copy)
+        os.system(snake)
 #===========================================================================================================
 
 #LONG READ ONLY ASSEMBLY====================================================================================
 elif analysis == "2" or analysis == "long":
 #GET INPUT--------------------------------------------------------------------------------------------------
     print("\nLong read assembly selected.")
-    MinIon = input("Input location of MinIon sample files here: \n")
-    Results = input("Input location to store the results here : \n")
+    options["MinIon"] = input("Input location of MinIon sample files here: \n")
+    options["Results"] = input("Input location to store the results here : \n")
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
@@ -84,7 +165,6 @@ elif analysis == "2" or analysis == "long":
 elif analysis == "3" or analysis == "hybrid":
 #GET INPUT--------------------------------------------------------------------------------------------------
     print("\nHYBRID ASSEMBLY"+"="*65+"\nOPTIONS"+"-"*73)
-    options = {}
     options["MinIon"] = input("Input location of MinIon sample files here: \n")
     options["Illumina"] = input("Input location of Illumina sample files here: \n")
     options["Results"] = input("Input location to store the results here \n")
@@ -99,12 +179,6 @@ elif analysis == "3" or analysis == "hybrid":
             os.mkdir(i)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
     correct_path(options)
-    # MinIon_m = MinIon
-    # Illumina_m = Illumina
-    # Results_m = Results
-    # print(" - MinIon data={}".format(MinIon_m))
-    # print(" - Illumina data={}".format(Illumina_m))
-    # print(" - Results location={}".format(Results_m))
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
     loc = open(options["Results"]+"/Short_reads/environment.txt", mode="w")
     for key, value in options.items():
@@ -113,19 +187,9 @@ elif analysis == "3" or analysis == "hybrid":
         else:
             loc.write(key+"="+value)  
     loc.close()
-
-    # loc = open(Results+"/Short_reads/environment.txt", mode="w")
-    # loc.write("MinIon="+MinIon+"\n")
-    # loc.write("MinIon_m="+MinIon_m+"\n")
-    # loc.write("Illumina="+Illumina+"\n")
-    # loc.write("Illumina_m="+Illumina_m+"\n")
-    # loc.write("Results="+Results+"\n")
-    # loc.write("Results_m="+Results_m+"\n")    
-    # loc.write("threads="+Threads)
-
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
-    file = open(Results+"/Short_reads/sampleList.txt",mode="w")
-    for i in sample_list(Illumina):
+    file = open(options["Results"]+"/Short_reads/sampleList.txt",mode="w")
+    for i in sample_list(options["Illumina"]):
         file.write(i+"\n")
     file.close()
 #COPY ILLUMINA SAMPLES TO RESULTS---------------------------------------------------------------------------
@@ -148,7 +212,7 @@ elif analysis == "3" or analysis == "hybrid":
         /bin/bash -c "cd /home/Snakefiles/Illumina && snakemake; /home/Scripts/copy_log.sh"'
     os.system(short_read)
 #LONG READS: DEMULTIPLEXING + TRIMMING----------------------------------------------------------------------
-    os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+MinIon+' '+Results+'/Long_reads '+options["Threads"])
+    os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+options["MinIon"]+' '+options["Results"]+'/Long_reads '+options["Threads"])
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
