@@ -35,19 +35,20 @@ else:
     print("\nUNIX based system detected ({})\n".format(system))
 #FIND SCRIPTS FOLDER LOCATION
 options = {}
-options["Scripts"] = os.path.realpath(__file__) + "/Scripts"
+options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
 #INPUT------------------------------------------------------------------------------------------------------
 #PATH CORRECTION--------------------------------------------------------------------------------------------
-def correct_path(options):
-    options_copy = options
+def correct_path(dictionairy):
+    global options
+    options_copy = dictionairy
     options = {}
     for key, value in options_copy.items():
         options[key] = value
         if sys=="Windows":
-            print("\nConverting Windows paths for use in Docker:")
+            #print("\nConverting Windows paths for use in Docker:")
             for i in list(string.ascii_lowercase+string.ascii_uppercase):
                 options[key] = value
                 if value.startswith(i+":/"):
@@ -99,9 +100,12 @@ if analysis == "1" or analysis == "short":
     for i in folders:
         if not os.path.exists(i):
             os.mkdir(i)
-#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED & SAVE INPUT TO FILE-----------------------------------------------
+#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------    
+    correct_path(options)
+    #print(options)
+#SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
     loc = open(options["Results"]+"/environment.txt", mode="w")
-    for key, value in correct_path(options).items():
+    for key, value in options.items():
         if not key == "Threads":
             loc.write(key+"="+value+"\n")
         else:
@@ -117,32 +121,42 @@ if analysis == "1" or analysis == "short":
         --name snakemake \
         --cpuset-cpus="0" \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "'+options["Results"]+':/home/Pipeline/" \
+        -v "'+options["Results_m"]+':/home/Pipeline/" \
+        -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/snakemake:v2.2_stable \
-        /bin/bash -c "cd /home/Snakemake/ && snakemake; /home/Scripts/copy_log.sh"'
+        /bin/bash -c "cd /home/Snakemake/ && snakemake; /home/Scripts/copy_snakemake_log.sh"'
 #SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE THE SAME-----------------------------------------
     if options["Illumina"] == options["Results"]:
         move = 'docker run -it --rm \
             --name copy_rawdata \
-            -v "'+options["Illumina"]+':/home/rawdata/" \
+            -v "'+options["Illumina_m"]+':/home/rawdata/" \
+            -v "'+options["Scripts_m"]+':/home/Scripts/" \
             christophevde/ubuntu_bash:v2.2_stable \
-            /home/Scripts/01_move_rawdata.sh'
+            /bin/bash -c \
+            "dos2unix /home/Scripts/Short_read/01_move_rawdata.bash \
+            && sh /home/Scripts/Short_read/01_move_rawdata.bash ' + options["Analysis"]+'"'
         os.system(move)
         os.system(snake)
         delete = 'docker run -it --rm \
             --name copy_rawdata \
-            -v "'+options["Illumina"]+':/home/rawdata/" \
+            -v "'+options["Illumina_m"]+':/home/rawdata/" \
+            -v "'+options["Scripts_m"]+':/home/Scripts/" \
             christophevde/ubuntu_bash:v2.2_stable \
-            /home/Scripts/02_delete_rawdata.sh'
+            /bin/bash -c \
+            "dos2unix home/Scripts/Short_read/02_delete_rawdata.bash \
+            && sh home/Scripts/Short_read/02_delete_rawdata.bash ' + options["Analysis"]+'"'
         os.system(delete)
     #SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE DIFFERENT---------------------------------------
     else:
         copy = 'docker run -it --rm \
             --name copy_rawdata \
-            -v "'+options["Illumina"]+':/home/rawdata/" \
-            -v "'+options["Results"]+':/home/Pipeline/" \
+            -v "'+options["Scripts_m"]+':/home/Scripts/" \
+            -v "'+options["Illumina_m"]+':/home/rawdata/" \
+            -v "'+options["Results_m"]+':/home/Pipeline/" \
             christophevde/ubuntu_bash:v2.2_stable \
-            /home/Scripts/01_copy_rawdata.sh'
+            /bin/bash -c \
+            "dos2unix /home/Scripts/Short_read/01_copy_rawdata.bash \
+            && sh /home/Scripts/Short_read/01_copy_rawdata.bash ' + options["Analysis"]+'"'
         os.system(copy)
         os.system(snake)
 #===========================================================================================================
