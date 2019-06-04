@@ -53,7 +53,7 @@ for id in `cat /home/Pipeline/Hybrid/${Run}/sampleList.txt`; do
 	for i in `cat /home/foldercontent4.txt`; do
 		echo -e "\nSTARTING ${i} \n";
 		java -jar /home/Trimmomatic-0.39/trimmomatic-0.39.jar  \
-		PE -threads ${Threads} -phred33 -trimlog /home/Pipeline/Hybrid/${Run}/Short_reads//${i}02_Trimmomatic/trimlog.txt \
+		PE -threads ${Threads} -phred33 -trimlog /home/Pipeline/Hybrid/${Run}/Short_reads/${i}/02_Trimmomatic/trimlog.txt \
 		/home/Pipeline/Hybrid/${Run}/Short_reads/${i}/00_Rawdata/${i}_L001_R1_001.fastq.gz /home/Pipeline/Hybrid/${Run}/Short_reads/${i}/00_Rawdata/${i}_L001_R2_001.fastq.gz \
 		/home/Pipeline/Hybrid/${Run}/Short_reads/${i}/02_Trimmomatic/${i}_L001_R1_001_P.fastq.gz /home/Pipeline/Hybrid/${Run}/Short_reads/${i}/02_Trimmomatic/${i}_L001_R1_001_U.fastq.gz \
 		/home/Pipeline/Hybrid/${Run}/Short_reads/${i}/02_Trimmomatic/${i}_L001_R2_001_P.fastq.gz /home/Pipeline/Hybrid/${Run}/Short_reads/${i}/02_Trimmomatic/${i}_L001_R2_001_U.fastq.gz \
