@@ -232,10 +232,13 @@ elif analysis == "3" or analysis == "hybrid":
         dos2unix /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh \
         && sh /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh '+options["Run"]+'"'
     os.system(short_read)
-#LONG READS: DEMULTIPLEXING + TRIMMING----------------------------------------------------------------------
+#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
     print("\n[STARTING] Hybrid assembly preparation: Long reads")
     print("\nDemultiplexing Long reads")
-    os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+options["MinIon"]+' '+options["Results"]+'/Long_reads '+options["Threads"])
+    os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh ' +options["MinIon"]+' '+options["Results"]+' '+options["Threads"])
+#LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
+#LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
+#HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
