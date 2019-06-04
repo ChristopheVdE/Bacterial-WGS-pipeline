@@ -9,12 +9,12 @@
 
 #FILE PREPARATION-------------------------------------------------------------------------------------------
 #Fix possible EOL errors in files to read
-dos2unix /home/rawdata/sampleList.txt
+dos2unix /home/rawdata/Hybrid/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 # copy the 00_Rawdata into the current analysis folder
 echo -e "\nRemoving duplicate rawdata files, please wait"
-for id in `cat /home/rawdata/sampleList.txt`; do
+for id in `cat /home/rawdata/Hybrid/sampleList.txt`; do
     rm /home/rawdata/${id}*.fastq.gz
 done    
 echo -e "Done\n"

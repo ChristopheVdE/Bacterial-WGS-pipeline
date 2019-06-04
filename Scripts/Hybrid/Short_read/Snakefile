@@ -13,14 +13,7 @@ for line in env.readlines():
         Results_m = line.replace("Results_m=",'').replace('\n','')
         Results_m = Results_m
     elif "Scripts_m" in line:
-        Scripts_m = line.replace("Scripts_m=",'').replace('\n','') + "/Short_read"
-    elif "Analysis=" in line:
-        Analysis = line.replace("Analysis=",'').replace('\n','')
-        print(line)
-        if "short" in line:
-            folder = "/Short_read"
-        elif "hybrid" in line:
-            folder = "Hybrid/Short_read"
+        Scripts_m = line.replace("Scripts_m=",'').replace('\n','')
     elif "Threads=" in line:
         Threads = line.replace("Threads=",'').replace('\n','')
 env.close()
@@ -28,7 +21,7 @@ env.close()
 
 #GET SAMPLE IDS---------------------------------------------------------------------------------------------
 ids = []
-samples = open("/home/Pipeline/"+folder+"sampleList.txt","r")
+samples = open("/home/Pipeline/Hybrid/sampleList.txt","r")
 for line in samples.readlines():
     ids.append(line.replace('\n',''))
 samples.close()
@@ -41,8 +34,8 @@ samples.close()
 
 rule all:                                                                       
     input:
-        expand("/home/Pipeline/{folder}/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",folder=folder,id=ids),                            
-        expand("/home/Pipeline/{folder}/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",folder=folder,id=ids),                                                                    
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids),                            
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",id=ids),                                                                    
     message:
         "Analysis done, results can be found in {Results_m}"
 
@@ -55,95 +48,100 @@ rule all:
 
 rule fastqc_raw:
     input:
-        expand("/home/Pipeline/{folder}/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",id=ids),  #the rawdata (output copy_rawdata rule)
-        expand("/home/Pipeline/{folder}/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",id=ids)   #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/00_Rawdata/{id}_L001_R1_001.fastq.gz",id=ids),  #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/00_Rawdata/{id}_L001_R2_001.fastq.gz",id=ids)   #the rawdata (output copy_rawdata rule)
     output:
-        expand("/home/Pipeline/{folder}/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",id=ids),
-        expand("/home/Pipeline/{folder}/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",id=ids)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",id=ids),
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",id=ids)
     message:
         "Analyzing raw-data with FastQC using Docker-container fastqc:v2.2_stable"
     shell:
         'docker run -it --rm \
         --name fastqc_raw \
-        -v "{Scripts_m}:/home/Scripts/:ro" \
+        -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/fastqc:v2.2_stable \
-        /bin/bash -c "sh /home/Scripts/Short_read/QC01_FastQC.sh {Analysis} raw {Threads}"'
+        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
+        && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh {Threads}"'
 
 #-----------------------------------------------------------------------------------------------------------
 # Pipeline step3: running multiqc on the raw-data in the current-analysis folder
 
 rule multiqc_raw:
     input:
-        expand("/home/Pipeline/{folder}/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",id=ids),    #output fastqc rawdata
-        expand("/home/Pipeline/{folder}/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",id=ids)     #output fastqc rawdata
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",id=ids),    #output fastqc rawdata
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",id=ids)     #output fastqc rawdata
     output:
-        expand("/home/Pipeline/{folder}/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids)             #Results MultiQC for each sample separately
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids)             #Results MultiQC for each sample separately
     message:
         "Analyzing raw-data with MultiQC using Docker-container multiqc:v2.2_stable"
     shell:
         'docker run -it --rm \
         --name multiqc_raw \
-        -v "{Scripts_m}:/home/Scripts/:ro" \
+        -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/multiqc:v2.2_stable \
-        /bin/bash -c "sh /home/Scripts/Short_read/QC02_MultiQC.sh {Analysis} raw"'
+        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw.sh \
+        && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw.sh"'
 
 #-----------------------------------------------------------------------------------------------------------
 # Pipeline step4: Trimming
 
 rule Trimming:
     input:
-        expand("/home/Pipeline/{folder}/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",id=ids),          #the rawdata (output copy_rawdata rule)
-        expand("/home/Pipeline/{folder}/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",id=ids),          #the rawdata (output copy_rawdata rule)
-        expand("/home/Pipeline/{folder}/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids)   #output multiqc raw (required so that the tasks don't run simultaniously and their outpur gets mixed in the terminal)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/00_Rawdata/{id}_L001_R1_001.fastq.gz",id=ids),          #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/00_Rawdata/{id}_L001_R2_001.fastq.gz",id=ids),          #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids)   #output multiqc raw (required so that the tasks don't run simultaniously and their outpur gets mixed in the terminal)
     output:
-        expand("/home/Pipeline/{folder}/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",id=ids),
-        expand("/home/Pipeline/{folder}/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",id=ids)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",id=ids),
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",id=ids)
     message:
         "Trimming raw-data with Trimmomatic v0.39 using Docker-container trimmomatic:v2.2_stable"
     shell:
         'docker run -it --rm \
         --name trimmomatic \
-        -v "{Scripts_m}:/home/Scripts/:ro" \
+        -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/trimmomatic:v2.2_stable \
-        /bin/bash -c "sh /home/Scripts/Short_read/02_runTrimmomatic.sh {Analysis} {Threads}"'
+        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh \
+        && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh {Threads}"'
 
 #-----------------------------------------------------------------------------------------------------------
 # Pipeline step5: FastQC trimmed data (paired reads only)
 
 rule fastqc_trimmed:
     input:
-        expand("/home/Pipeline/{folder}/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",id=ids), #output trimmomatic
-        expand("/home/Pipeline/{folder}/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",id=ids)  #output trimmomatic
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",id=ids), #output trimmomatic
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",id=ids)  #output trimmomatic
     output:
-        expand("/home/Pipeline/{folder}/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",id=ids)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",id=ids)
     message:
         "Analyzing trimmed-data with FastQC using Docker-container fastqc:v2.2_stable"
     shell:
         'docker run -it --rm \
         --name fastqc_trim \
-        -v "{Scripts_m}:/home/Scripts/:ro" \
+        -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/fastqc:v2.2_stable \
-        /bin/bash -c "sh /home/Scripts/Short_read/QC01_FastQC.sh {Analysis} trimmed {Threads}"'
+        /bin/bash -c "dos2unix /home/Scripts/Short_read/Hybrid/QC01_FastQC_Trim.sh \
+        && /home/Scripts/Short_read/Hybrid/QC01_FastQC_Trim.sh {Threads}"'
 
 #-----------------------------------------------------------------------------------------------------------
 # Pipeline step6: MultiQC trimmed data (paired reads only) 
 
 rule multiqc_trimmed:
     input:
-        expand("/home/Pipeline/{folder}/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",id=ids)      #output fastqc trimmed data
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",id=ids)      #output fastqc trimmed data
     output:
-        expand("/home/Pipeline/{folder}/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",id=ids)
+        expand("/home/Pipeline/Hybrid/{id}/Short_reads/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",id=ids)
     message:
         "Analyzing trimmed-data with MultiQC using Docker-container multiqc:v2.2_stable"
     shell:
         'docker run -it --rm \
         --name multiqc_trim \
-        -v "{Scripts_m}:/home/Scripts/:ro" \
+        -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/multiqc:v2.2_stable \
-        /bin/bash -c "sh /home/Scripts/Short_read/QC02_MultiQC.sh {Analysis} trimmed"'
+        /bin/bash -c "dos2unix /home/Scripts/Short_read/QC02_MultiQC_Trim.sh \
+        && /home/Scripts/Short_read/QC02_MultiQC_Trim.sh"'
 #===========================================================================================================

@@ -27,13 +27,13 @@ Threads=${1:-"1"}
 
 #FASTQC PRE-START-------------------------------------------------------------------------------------------
 #Fix possible EOL errors in sampleList.txt
-dos2unix /home/Pipeline/sampleList.txt
+dos2unix /home/Pipeline/Hybrid/sampleList.txt
 echo
 #-----------------------------------------------------------------------------------------------------------
 
 #RUN FASTQC RAWDATA=========================================================================================
 echo "Starting FastQC with ${Threads} threads"
-for id in `cat /home/Pipeline/sampleList.txt`; do
+for id in `cat /home/Pipeline/Hybrid/sampleList.txt`; do
 #CREATE OUTPUTFOLDER IF NOT EXISTS--------------------------------------------------------------------------
      mkdir -p /home/Pipeline/Hybrid/${id}/Short_reads/01_QC-Rawdata/QC_FastQC
 #RUN FASTQC-------------------------------------------------------------------------------------------------

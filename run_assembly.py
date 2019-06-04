@@ -33,7 +33,7 @@ if "Windows" in system:
 else:
     sys="UNIX"
     print("\nUNIX based system detected ({})\n".format(system))
-#FIND SCRIPTS FOLDER LOCATION
+#FIND SCRIPTS FOLDER LOCATION-------------------------------------------------------------------------------
 options = {}
 options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
 #===========================================================================================================
@@ -124,7 +124,8 @@ if analysis == "1" or analysis == "short":
         -v "'+options["Results_m"]+':/home/Pipeline/" \
         -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/snakemake:v2.2_stable \
-        /bin/bash -c "cd /home/Snakemake/ && snakemake; /home/Scripts/copy_snakemake_log.sh"'
+        /bin/bash -c "cd /home/Snakemake/ && snakemake; \
+        dos2unix /home/Scripts/copy_snakemake_log.sh && sh /home/Scripts/copy_snakemake_log.sh"'
 #SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE THE SAME-----------------------------------------
     if options["Illumina"] == options["Results"]:
         move = 'docker run -it --rm \
@@ -187,10 +188,9 @@ elif analysis == "3" or analysis == "hybrid":
     if advanced == "y" or advanced =="yes":
         print("ADVANCED OPTIONS"+"-"*64)
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
-    folders = [options["Results"]+"/Short_reads", options["Results"]+"/Long_reads"]
+    folders = [options["Results"]+"/Hybrid", options["Results"]+"/Hybrid"]
     for i in folders:
-        if not os.path.exists(i):
-            os.mkdir(i)
+        os.makedirs(i, exist_ok=True)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
     correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
@@ -202,7 +202,7 @@ elif analysis == "3" or analysis == "hybrid":
             loc.write(key+"="+value)  
     loc.close()
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
-    file = open(options["Results"]+"/Short_reads/sampleList.txt",mode="w")
+    file = open(options["Results"]+"/Hybrid/sampleList.txt",mode="w")
     for i in sample_list(options["Illumina"]):
         file.write(i+"\n")
     file.close()
@@ -211,8 +211,10 @@ elif analysis == "3" or analysis == "hybrid":
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
         -v "'+options["Results_m"]+':/home/Pipeline/" \
+        -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/ubuntu_bash:v2.2_stable \
-        /home/Scripts/01_copy_rawdata.sh'
+        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
+        && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh"'
     os.system(copy)
 #SHORT READS: TRIMMING & QC---------------------------------------------------------------------------------
     pwd = location = os.getcwd()
@@ -220,10 +222,11 @@ elif analysis == "3" or analysis == "hybrid":
         --name snakemake \
         --cpuset-cpus="0" \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "'+pwd+'/Snakefiles/:/home/Snakefiles:ro" \
+        -v "'+options["Scripts_m"]+':/home/Scripts/" \
         -v "'+options["Results_m"]+':/home/Pipeline/" \
         christophevde/snakemake:v2.3_stable \
-        /bin/bash -c "cd /home/Snakefiles/Illumina && snakemake; /home/Scripts/copy_log.sh"'
+        /bin/bash -c "cd /home/Scripts/Hybrid/Short_read && snakemake; \
+        dos2unix /home/Scripts/copy_snakemake_log.sh && sh /home/Scripts/copy_snakemake_log.sh"'
     os.system(short_read)
 #LONG READS: DEMULTIPLEXING + TRIMMING----------------------------------------------------------------------
     os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+options["MinIon"]+' '+options["Results"]+'/Long_reads '+options["Threads"])
