@@ -41,7 +41,7 @@ for id in `cat /home/Pipeline/Hybrid/sampleList.txt`; do
           echo -e "STARTING ${i} \n";
           fastqc --extract \
           -t ${Threads} \
-          -o /home/Pipeline/Hybrid/${id}/Short_reads//01_QC-Rawdata/QC_FastQC \
+          -o /home/Pipeline/Hybrid/${id}/Short_reads/01_QC-Rawdata/QC_FastQC \
           /home/Pipeline/Hybrid/${id}/Short_reads/00_Rawdata/${i} \
           2>&1 | tee -a /home/Pipeline/Hybrid/${id}/Short_reads/01_QC-Rawdata/QC_FastQC/stdout_err.txt ;
           echo -e "\n ${i} FINISHED \n";

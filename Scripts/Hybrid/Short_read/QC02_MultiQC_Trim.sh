@@ -9,7 +9,7 @@
 
 #MultiQC PRE-START------------------------------------------------------------------------------------------
 #Fix possible EOL errors in sampleList.txt
-dos2unix /home/Pipeline/sampleList.txt
+dos2unix /home/Pipeline/Hybrid/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 #===========================================================================================================
@@ -46,7 +46,7 @@ echo -e "\nDone"
 #===========================================================================================================
 
 #EXECUTE MultiQC--------------------------------------------------------------------------------------------
-for id in `cat /home/Pipeline/sampleList.txt`; do
+for id in `cat /home/Pipeline/Hybrid/sampleList.txt`; do
       #CREATE OUTPUTFOLDER IF NOT EXISTS
       cd /home/Pipeline/Hybrid/${id}/Short_reads/03_QC-Trimmomatic_Paired/
       mkdir -p QC_MultiQC/

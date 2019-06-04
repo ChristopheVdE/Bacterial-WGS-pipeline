@@ -15,6 +15,7 @@ import os
 import platform
 import subprocess
 import string
+import shutil
 #===========================================================================================================
 
 #GENERAL====================================================================================================
@@ -207,6 +208,7 @@ elif analysis == "3" or analysis == "hybrid":
         file.write(i+"\n")
     file.close()
 #COPY ILLUMINA SAMPLES TO RESULTS---------------------------------------------------------------------------
+    print("[STARTING] Hybrid assembly preparation: Short reads")
     copy = 'docker run -it --rm \
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
@@ -226,9 +228,15 @@ elif analysis == "3" or analysis == "hybrid":
         -v "'+options["Results_m"]+':/home/Pipeline/" \
         christophevde/snakemake:v2.3_stable \
         /bin/bash -c "cd /home/Scripts/Hybrid/Short_read && snakemake; \
-        dos2unix /home/Scripts/copy_snakemake_log.sh && sh /home/Scripts/copy_snakemake_log.sh"'
+        dos2unix /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh && sh /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh"'
     os.system(short_read)
+#DELETE THE .snakemake folder-------------------------------------------------------------------------------
+    print("\nRemoving temporary folder: .snakemake")
+    shutil.rmtree(options["Scripts"]+"/Hybrid/Short_read/.snakemake")
+    print("[COMPLETED] Hybrid assembly preparation: Short reads")
 #LONG READS: DEMULTIPLEXING + TRIMMING----------------------------------------------------------------------
+    print("[STARTING] Hybrid assembly preparation: Long reads")
+    print("\nDemultiplexing Long reads")
     os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+options["MinIon"]+' '+options["Results"]+'/Long_reads '+options["Threads"])
 #===========================================================================================================
 

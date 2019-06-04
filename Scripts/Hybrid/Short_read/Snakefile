@@ -123,8 +123,8 @@ rule fastqc_trimmed:
         -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/fastqc:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Short_read/Hybrid/QC01_FastQC_Trim.sh \
-        && /home/Scripts/Short_read/Hybrid/QC01_FastQC_Trim.sh {Threads}"'
+        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh \
+        && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh {Threads}"'
 
 #-----------------------------------------------------------------------------------------------------------
 # Pipeline step6: MultiQC trimmed data (paired reads only) 
@@ -142,6 +142,6 @@ rule multiqc_trimmed:
         -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/multiqc:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Short_read/QC02_MultiQC_Trim.sh \
-        && /home/Scripts/Short_read/QC02_MultiQC_Trim.sh"'
+        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim.sh \
+        && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim.sh"'
 #===========================================================================================================
