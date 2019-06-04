@@ -37,15 +37,15 @@ echo
 echo "Starting FastQC with ${Threads} threads"
 for id in `cat /home/Pipeline/Hybrid/${Run}/sampleList.txt`; do
 #CREATE OUTPUTFOLDER IF NOT EXISTS--------------------------------------------------------------------------
-    mkdir -p /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC
+    mkdir -p /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC
 #RUN FASTQC-------------------------------------------------------------------------------------------------
-    for i in $(ls /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/02_Trimmomatic | grep _P.fastq.gz); do
+    for i in $(ls /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/02_Trimmomatic | grep _P.fastq.gz); do
         echo -e "STARTING FastQC on paired reads of ${i} \n";
         fastqc --extract \
         -t ${Threads} \
-        -o /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC \
-        /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/02_Trimmomatic/${i} \
-        2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/stdout_err.txt ;
+        -o /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC \
+        /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/02_Trimmomatic/${i} \
+        2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/stdout_err.txt ;
         echo -e "\n ${i} FINISHED \n";
     done
 done

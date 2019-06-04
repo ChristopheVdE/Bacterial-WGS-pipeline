@@ -32,8 +32,8 @@ dos2unix -q /home/rawdata/Hybrid/${Run}/sampleList.txt
 # copy the 00_Rawdata into the current analysis folder
 echo "\nMoving files, please wait"
 for id in `cat /home/rawdata/Hybrid/${Run}/sampleList.txt`; do
-    mkdir -p /home/rawdata/Hybrid/${Run}/Short_reads/${id}/00_Rawdata
-    cp -vrn /home/rawdata/${id}*.fastq.gz /home/rawdata/Hybrid/${Run}/Short_reads/${id}/00_Rawdata/ \
-    2>&1 | tee -a /home/rawdata/Hybrid/${Run}/Short_reads/${id}/00_Rawdata/stdout.txt
+    mkdir -p /home/rawdata/Hybrid/${Run}/01_Short_reads/${id}/00_Rawdata
+    cp -vrn /home/rawdata/${id}*.fastq.gz /home/rawdata/Hybrid/${Run}/01_Short_reads/${id}/00_Rawdata/ \
+    2>&1 | tee -a /home/rawdata/Hybrid/${Run}/01_Short_reads/${id}/00_Rawdata/stdout.txt
 done    
 echo "Done\n"

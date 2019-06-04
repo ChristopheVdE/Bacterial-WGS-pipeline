@@ -37,13 +37,13 @@ dos2unix /home/Pipeline/Hybrid/${Run}/sampleList.txt
 # create temp folder in container (will automatically be deleted when container closes)
 mkdir -p /home/fastqc-results
 # create outputfolder MultiQC full run trimmed data
-mkdir -p /home/Pipeline/Hybrid/${Run}/QC_MultiQC/QC-Trimmed
+mkdir -p /home/Pipeline/Hybrid/${Run}/01_Short_reads/QC_MultiQC/QC-Trimmed
 #-----------------------------------------------------------------------------------------------------------
 
 # COLLECT FASTQC DATA---------------------------------------------------------------------------------------
 # collect all fastqc results of the samples in this run into this temp folder
 for id in `cat /home/Pipeline/${Run}/sampleList.txt`; do
-      cp -r /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/* /home/fastqc-results/
+      cp -r /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/* /home/fastqc-results/
 done
 #-----------------------------------------------------------------------------------------------------------
 
@@ -51,8 +51,8 @@ done
 echo -e "\nStarting MultiQC on paired-end trimmed data of FULL RUN\n"
 echo "----------"
 multiqc /home/fastqc-results/ \
--o /home/Pipeline/Hybrid/${Run}/QC_MultiQC/QC-Trimmed \
-2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/QC_MultiQC/QC-Trimmed/stdout_err.txt;
+-o /home/Pipeline/Hybrid/${Run}/01_Short_reads/QC_MultiQC/QC-Trimmed \
+2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/01_Short_reads/QC_MultiQC/QC-Trimmed/stdout_err.txt;
 echo "----------"
 echo -e "\nDone"
 #-----------------------------------------------------------------------------------------------------------
@@ -64,14 +64,14 @@ echo -e "\nDone"
 #EXECUTE MultiQC--------------------------------------------------------------------------------------------
 for id in `cat /home/Pipeline/Hybrid/${Run}/sampleList.txt`; do
       #CREATE OUTPUTFOLDER IF NOT EXISTS
-      cd /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/
+      cd /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/03_QC-Trimmomatic_Paired/
       mkdir -p QC_MultiQC/
       #RUN MultiQC
       echo -e "\nStarting MultiQC on sample: ${id}\n"
       echo "----------"
-      multiqc /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/ \
-      -o /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_MultiQC \
-      2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/3_QC-Trimmomatic_Paired/QC_MultiQC/stdout_err.txt;
+      multiqc /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/ \
+      -o /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_MultiQC \
+      2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/3_QC-Trimmomatic_Paired/QC_MultiQC/stdout_err.txt;
       echo "----------"
       echo -e "\nDone"
 done

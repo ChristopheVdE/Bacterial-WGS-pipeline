@@ -26,7 +26,7 @@ Run="$1"
 
 # COPY SNAKEMAKE LOG----------------------------------------------------------------------------------------
 echo -e "\nCopying snakemake log, please wait"
-mkdir -p /home/Pipeline/Hybrid/${Run}/Snakemake_logs/Short_reads/
-cp -vr /home/Scripts/Hybrid/Short_read/.snakemake/log/* /home/Pipeline/Hybrid/${Run}/Snakemake_logs/Short_reads/
+mkdir -p /home/Pipeline/Hybrid/${Run}/Snakemake_logs/01_Short_reads/
+cp -vr /home/Scripts/Hybrid/Short_read/.snakemake/log/* /home/Pipeline/Hybrid/${Run}/Snakemake_logs/01_Short_reads/
 echo -e "Done\n"
 #-----------------------------------------------------------------------------------------------------------

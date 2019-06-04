@@ -42,8 +42,8 @@ samples.close()
 
 rule all:                                                                       
     input:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",Run=Run,id=ids),                            
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",Run=Run,id=ids),                                                                    
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",Run=Run,id=ids),                            
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",Run=Run,id=ids),                                                                    
     message:
         "Analysis done, results can be found in {Results_m}"
 
@@ -56,11 +56,11 @@ rule all:
 
 rule fastqc_raw:
     input:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",Run=Run,id=ids),  #the rawdata (output copy_rawdata rule)
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",Run=Run,id=ids)   #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",Run=Run,id=ids),  #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",Run=Run,id=ids)   #the rawdata (output copy_rawdata rule)
     output:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",Run=Run,id=ids),
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",Run=Run,id=ids)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",Run=Run,id=ids),
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",Run=Run,id=ids)
     message:
         "Analyzing raw-data with FastQC using Docker-container fastqc:v2.2_stable"
     shell:
@@ -77,10 +77,10 @@ rule fastqc_raw:
 
 rule multiqc_raw:
     input:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",Run=Run,id=ids),    #output fastqc rawdata
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",Run=Run,id=ids)     #output fastqc rawdata
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",Run=Run,id=ids),    #output fastqc rawdata
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",Run=Run,id=ids)     #output fastqc rawdata
     output:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",Run=Run,id=ids)             #Results MultiQC for each sample separately
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",Run=Run,id=ids)             #Results MultiQC for each sample separately
     message:
         "Analyzing raw-data with MultiQC using Docker-container multiqc:v2.2_stable"
     shell:
@@ -97,12 +97,12 @@ rule multiqc_raw:
 
 rule Trimming:
     input:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",Run=Run,id=ids),          #the rawdata (output copy_rawdata rule)
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",Run=Run,id=ids),          #the rawdata (output copy_rawdata rule)
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",Run=Run,id=ids)   #output multiqc raw (required so that the tasks don't run simultaniously and their outpur gets mixed in the terminal)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",Run=Run,id=ids),          #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",Run=Run,id=ids),          #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",Run=Run,id=ids)   #output multiqc raw (required so that the tasks don't run simultaniously and their outpur gets mixed in the terminal)
     output:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",Run=Run,id=ids),
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",Run=Run,id=ids)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",Run=Run,id=ids),
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",Run=Run,id=ids)
     message:
         "Trimming raw-data with Trimmomatic v0.39 using Docker-container trimmomatic:v2.2_stable"
     shell:
@@ -119,10 +119,10 @@ rule Trimming:
 
 rule fastqc_trimmed:
     input:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",Run=Run,id=ids), #output trimmomatic
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",Run=Run,id=ids)  #output trimmomatic
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",Run=Run,id=ids), #output trimmomatic
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",Run=Run,id=ids)  #output trimmomatic
     output:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",Run=Run,id=ids)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",Run=Run,id=ids)
     message:
         "Analyzing trimmed-data with FastQC using Docker-container fastqc:v2.2_stable"
     shell:
@@ -139,9 +139,9 @@ rule fastqc_trimmed:
 
 rule multiqc_trimmed:
     input:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",Run=Run,id=ids)      #output fastqc trimmed data
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",Run=Run,id=ids)      #output fastqc trimmed data
     output:
-        expand("/home/Pipeline/Hybrid/{Run}/Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",Run=Run,id=ids)
+        expand("/home/Pipeline/Hybrid/{Run}/01_Short_reads/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",Run=Run,id=ids)
     message:
         "Analyzing trimmed-data with MultiQC using Docker-container multiqc:v2.2_stable"
     shell:
