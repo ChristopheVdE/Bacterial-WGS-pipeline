@@ -15,7 +15,7 @@ import os
 import platform
 import subprocess
 import string
-import shutil
+from datetime import date
 #===========================================================================================================
 
 #GENERAL====================================================================================================
@@ -37,6 +37,8 @@ else:
 #FIND SCRIPTS FOLDER LOCATION-------------------------------------------------------------------------------
 options = {}
 options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+#GET RUN DATE-----------------------------------------------------------------------------------------------
+options["Run"] = date.today().strftime("%Y%m%d")
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
@@ -189,13 +191,13 @@ elif analysis == "3" or analysis == "hybrid":
     if advanced == "y" or advanced =="yes":
         print("ADVANCED OPTIONS"+"-"*64)
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
-    folders = [options["Results"]+"/Hybrid", options["Results"]+"/Hybrid"]
+    folders = [options["Results"]+"/Hybrid/"+options["Run"],]
     for i in folders:
         os.makedirs(i, exist_ok=True)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
     correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
-    loc = open(options["Results"]+"/environment.txt", mode="w")
+    loc = open(options["Results"]+"/Hybrid/"+options["Run"]+"/environment.txt", mode="w")
     for key, value in options.items():
         if not key == "Threads":
             loc.write(key+"="+value+"\n")
@@ -203,7 +205,7 @@ elif analysis == "3" or analysis == "hybrid":
             loc.write(key+"="+value)  
     loc.close()
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
-    file = open(options["Results"]+"/Hybrid/sampleList.txt",mode="w")
+    file = open(options["Results"]+"/Hybrid/"+options["Run"]+"/sampleList.txt",mode="w")
     for i in sample_list(options["Illumina"]):
         file.write(i+"\n")
     file.close()
@@ -216,10 +218,9 @@ elif analysis == "3" or analysis == "hybrid":
         -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/ubuntu_bash:v2.2_stable \
         /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
-        && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh"'
+        && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+options["Run"]+'"'
     os.system(copy)
-#SHORT READS: TRIMMING & QC---------------------------------------------------------------------------------
-    pwd = location = os.getcwd()
+#SHORT READS: TRIMMING & QC (DOCKER)------------------------------------------------------------------------
     short_read = 'docker run -it --rm \
         --name snakemake \
         --cpuset-cpus="0" \
@@ -228,14 +229,11 @@ elif analysis == "3" or analysis == "hybrid":
         -v "'+options["Results_m"]+':/home/Pipeline/" \
         christophevde/snakemake:v2.3_stable \
         /bin/bash -c "cd /home/Scripts/Hybrid/Short_read && snakemake; \
-        dos2unix /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh && sh /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh"'
+        dos2unix /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh \
+        && sh /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh '+options["Run"]+'"'
     os.system(short_read)
-#DELETE THE .snakemake folder-------------------------------------------------------------------------------
-    print("\nRemoving temporary folder: .snakemake")
-    shutil.rmtree(options["Scripts"]+"/Hybrid/Short_read/.snakemake")
-    print("[COMPLETED] Hybrid assembly preparation: Short reads")
 #LONG READS: DEMULTIPLEXING + TRIMMING----------------------------------------------------------------------
-    print("[STARTING] Hybrid assembly preparation: Long reads")
+    print("\n[STARTING] Hybrid assembly preparation: Long reads")
     print("\nDemultiplexing Long reads")
     os.system('sh ./Scripts/Long_read/01_demultiplex.sh '+options["MinIon"]+' '+options["Results"]+'/Long_reads '+options["Threads"])
 #===========================================================================================================
