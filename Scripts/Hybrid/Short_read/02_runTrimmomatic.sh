@@ -1,0 +1,62 @@
+#!/bin/bash
+
+############################################################################################################
+#NAME SCRIPT: runTrimmomatic.sh
+#AUTHOR: Tessa de Block
+#DOCKER UPDATE: Christophe Van den Eynde
+#RUNNING TRIMMOMATIC
+#USAGE: ./runTrimmomatic.sh <number of threads>
+############################################################################################################
+
+#FUNCTION--------------------------------------------------------------------------------------------------
+usage() {
+	errorcode=" \nERROR -> This script can have only 1 parameter:\n
+        1: [OPTIONAL] Ammount of threads to use (default = 1)\n";
+	echo ${errorcode};
+	exit 1;
+}
+if [ "$#" -gt 1 ]; then
+	usage
+fi
+echo
+#-----------------------------------------------------------------------------------------------------------
+
+#VARIABLES--------------------------------------------------------------------------------------------------
+Threads=${1:-"1"}
+#-----------------------------------------------------------------------------------------------------------
+
+#TRIMMOMATIC PRE-START--------------------------------------------------------------------------------------
+ADAPTERFILE='/home/adapters/NexteraPE-PE.fa';
+#Fix possible EOL errors in sampleList.txt
+dos2unix /home/Pipeline/sampleList.txt
+#-----------------------------------------------------------------------------------------------------------
+
+#RUN TRIMMOMATIC--------------------------------------------------------------------------------------------
+echo "Starting Trimmomatic with ${Threads} threads"
+for id in `cat /home/Pipeline/sampleList.txt`; do
+	#SPECIFY VARIABLES
+	# inputFolder = /home/Pipeline/${id}/Short_reads_prep/00_Rawdata
+	# outputFolder = /home/Pipeline/${id}/Short_reads_prep/02_Trimmomatic
+
+	#CREATE OUTPUTFOLDER IF NOT EXISTS
+	mkdir -p /home/Pipeline/Hybrid/${id}/Short_reads/02_Trimmomatic
+
+	#CREATE temp folder-content-list
+	ls /home/Pipeline/Hybrid/${id}/Short_reads/00_Rawdata > /home/foldercontent.txt
+	sed 's/_L001_R1_001.fastq.gz//g' /home/foldercontent.txt > /home/foldercontent2.txt
+	sed 's/_L001_R2_001.fastq.gz//g' /home/foldercontent2.txt > /home/foldercontent3.txt
+	uniq -d /home/foldercontent3.txt > /home/foldercontent4.txt; 
+
+	#RUN TRIMMOMATIC
+	for i in `cat /home/foldercontent4.txt`; do
+		echo -e "\nSTARTING ${i} \n";
+		java -jar /home/Trimmomatic-0.39/trimmomatic-0.39.jar  \
+		PE -threads ${Threads} -phred33 -trimlog /home/Pipeline/${i}/Short_reads_prep/02_Trimmomatic/trimlog.txt \
+		/home/Pipeline/Hybrid/${i}/Short_reads/00_Rawdata/${i}_L001_R1_001.fastq.gz /home/Pipeline/Hybrid/${i}/Short_reads/00_Rawdata/${i}_L001_R2_001.fastq.gz \
+		/home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R1_001_P.fastq.gz /home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R1_001_U.fastq.gz \
+		/home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R2_001_P.fastq.gz /home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R2_001_U.fastq.gz \
+		ILLUMINACLIP:${ADAPTERFILE}:2:40:15 LEADING:20 TRAILING:20 SLIDINGWINDOW:4:20 MINLEN:36 \
+		2>&1 | tee -a /home/Pipeline/Hybrid/${i}/Short_reads/Short_reads_prep/02_Trimmomatic/stdout_err.txt;
+	done
+done
+#-----------------------------------------------------------------------------------------------------------
