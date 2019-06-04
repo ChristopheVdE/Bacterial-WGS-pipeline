@@ -62,7 +62,7 @@ echo -e "\nDone"
 #===========================================================================================================
 
 #EXECUTE MultiQC--------------------------------------------------------------------------------------------
-for id in `cat /home/Pipeline/Hybrid/sampleList.txt`; do
+for id in `cat /home/Pipeline/Hybrid/${Run}/sampleList.txt`; do
       #CREATE OUTPUTFOLDER IF NOT EXISTS
       cd /home/Pipeline/Hybrid/Short_reads/${id}/01_QC-Rawdata/
       mkdir -p QC_MultiQC/

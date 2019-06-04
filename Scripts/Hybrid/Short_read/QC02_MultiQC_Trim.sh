@@ -42,7 +42,7 @@ mkdir -p /home/Pipeline/Hybrid/${Run}/QC_MultiQC/QC-Trimmed
 
 # COLLECT FASTQC DATA---------------------------------------------------------------------------------------
 # collect all fastqc results of the samples in this run into this temp folder
-for id in `cat /home/Pipeline/sampleList.txt`; do
+for id in `cat /home/Pipeline/${Run}/sampleList.txt`; do
       cp -r /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/QC_FastQC/* /home/fastqc-results/
 done
 #-----------------------------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ echo -e "\nDone"
 #===========================================================================================================
 
 #EXECUTE MultiQC--------------------------------------------------------------------------------------------
-for id in `cat /home/Pipeline/Hybrid/sampleList.txt`; do
+for id in `cat /home/Pipeline/Hybrid/${Run}/sampleList.txt`; do
       #CREATE OUTPUTFOLDER IF NOT EXISTS
       cd /home/Pipeline/Hybrid/${Run}/Short_reads/${id}/03_QC-Trimmomatic_Paired/
       mkdir -p QC_MultiQC/
