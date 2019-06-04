@@ -28,15 +28,15 @@ Threads=${1:-"1"}
 #TRIMMOMATIC PRE-START--------------------------------------------------------------------------------------
 ADAPTERFILE='/home/adapters/NexteraPE-PE.fa';
 #Fix possible EOL errors in sampleList.txt
-dos2unix /home/Pipeline/sampleList.txt
+dos2unix /home/Pipeline/Hybrid/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 #RUN TRIMMOMATIC--------------------------------------------------------------------------------------------
 echo "Starting Trimmomatic with ${Threads} threads"
-for id in `cat /home/Pipeline/sampleList.txt`; do
+for id in `cat /home/Pipeline/Hybrid/sampleList.txt`; do
 	#SPECIFY VARIABLES
-	# inputFolder = /home/Pipeline/${id}/Short_reads_prep/00_Rawdata
-	# outputFolder = /home/Pipeline/${id}/Short_reads_prep/02_Trimmomatic
+	# inputFolder = /home/Pipeline/Hybrid/${id}/Short_reads/00_Rawdata
+	# outputFolder = /home/Pipeline/Hybrid/${id}/Short_reads/02_Trimmomatic
 
 	#CREATE OUTPUTFOLDER IF NOT EXISTS
 	mkdir -p /home/Pipeline/Hybrid/${id}/Short_reads/02_Trimmomatic
@@ -51,12 +51,12 @@ for id in `cat /home/Pipeline/sampleList.txt`; do
 	for i in `cat /home/foldercontent4.txt`; do
 		echo -e "\nSTARTING ${i} \n";
 		java -jar /home/Trimmomatic-0.39/trimmomatic-0.39.jar  \
-		PE -threads ${Threads} -phred33 -trimlog /home/Pipeline/${i}/Short_reads_prep/02_Trimmomatic/trimlog.txt \
+		PE -threads ${Threads} -phred33 -trimlog /home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/trimlog.txt \
 		/home/Pipeline/Hybrid/${i}/Short_reads/00_Rawdata/${i}_L001_R1_001.fastq.gz /home/Pipeline/Hybrid/${i}/Short_reads/00_Rawdata/${i}_L001_R2_001.fastq.gz \
 		/home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R1_001_P.fastq.gz /home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R1_001_U.fastq.gz \
 		/home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R2_001_P.fastq.gz /home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/${i}_L001_R2_001_U.fastq.gz \
 		ILLUMINACLIP:${ADAPTERFILE}:2:40:15 LEADING:20 TRAILING:20 SLIDINGWINDOW:4:20 MINLEN:36 \
-		2>&1 | tee -a /home/Pipeline/Hybrid/${i}/Short_reads/Short_reads_prep/02_Trimmomatic/stdout_err.txt;
+		2>&1 | tee -a /home/Pipeline/Hybrid/${i}/Short_reads/02_Trimmomatic/stdout_err.txt;
 	done
 done
 #-----------------------------------------------------------------------------------------------------------
