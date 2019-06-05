@@ -1,5 +1,3 @@
-#!/bin/bash
-
 ###########################################################################################################
 #NAME SCRIPT: 04_demultiplex_compare.py
 #AUTHOR: Christophe Van den Eynde  

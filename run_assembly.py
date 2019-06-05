@@ -245,7 +245,7 @@ elif analysis == "3" or analysis == "hybrid":
     os.system(short_read)
 #LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
     print("\n[STARTING] Hybrid assembly preparation: Long reads")
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/read_processor_log-2019-06-05_13-13-20.log")
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
         if sys == "UNIX":
@@ -256,7 +256,10 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Results"]+' '\
         +options["Run"]+' '\
         +options["Threads"])
+    else:
+        print("Nothing to be done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
+
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/none.fastq")
     if not my_file.is_file():
@@ -265,11 +268,14 @@ elif analysis == "3" or analysis == "hybrid":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
         print("\nTrimming Long reads")
         os.system('sh ./Scripts/Hybrid/Long_read/03_Trimming.sh '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
         +options["Results"]+' '\
         +options["Run"]+' '\
         +options["Threads"])
+    else:
+        print("Nothing to be done")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
+
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
