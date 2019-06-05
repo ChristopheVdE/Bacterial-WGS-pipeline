@@ -245,12 +245,12 @@ elif analysis == "3" or analysis == "hybrid":
     os.system(short_read)
 #LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
     print("\n[STARTING] Hybrid assembly preparation: Long reads")
+    print("\nDemultiplexing Long reads")
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
         if sys == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
-        print("\nDemultiplexing Long reads")
         os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
         +options["MinIon"]+' '\
         +options["Results"]+' '\
@@ -259,19 +259,25 @@ elif analysis == "3" or analysis == "hybrid":
     else:
         print("Results already exist, nothing to be done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
-
+    os.mkdir(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/demultiplex_summary.txt")
+    print("\nTrimming Long reads")
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/demultiplex_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         if sys == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
-        print("\nTrimming Long reads")
+        #demultiplex correct + trimming 
         os.system('sh ./Scripts/Hybrid/Long_read/03_Trimming.sh '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
         +options["Results"]+' '\
         +options["Run"]+' '\
         +options["Threads"])
+        #creation of summary table of demultiplexig results (guppy and porechop)
+        os.system("python3 "+options["Scripts"]+"/Hybrid/Long_read/04_demultiplex_compare.py "\
+        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/" \
+        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/" \
+        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
     else:
         print("Results already exist, nothing to be done")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------

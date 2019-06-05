@@ -10,6 +10,7 @@
 import sys
 guppy = sys.argv[1]
 porechop = sys.argv[2]
+results = sys.argv[3]
 print("Making summary table of demultiplexing results found in: {} and {}".format(guppy, porechop))
 #==========================================================================================================
 
@@ -57,7 +58,7 @@ for barcode in summary.keys():
 #=========================================================================================================
 
 #WRITE RESULTS TO FILE====================================================================================
-result = open(porechop + "/demultiplex_summary.txt","w")
+result = open(results+"/demultiplex_summary.txt","w")
 result.write("{:15s} || {:10s} | {:3s} || {:16s} | {:3s}\n".format("Barcode","Guppy", "%","Guppy + Porechop", "%"))
 result.write("-"*61 + "\n")
 for key, value in sorted(summary.items()):
