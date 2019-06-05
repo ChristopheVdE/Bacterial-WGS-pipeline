@@ -16,7 +16,7 @@ import platform
 import subprocess
 import string
 from datetime import date
-import getpass
+from pathlib import Path
 #===========================================================================================================
 
 #GENERAL====================================================================================================
@@ -42,8 +42,13 @@ options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
 options["Run"] = date.today().strftime("%Y%m%d")
 #LINUX OS: GET USER ID AND GROUP ID-------------------------------------------------------------------------
 if sys == "UNIX":
-    UID = getpass.getuser()
-    options["Group"] = UID+":docker"
+    UID = subprocess.Popen('id -u', shell=True, stdout=subprocess.PIPE)
+    for line in UID.stdout:
+        UID = line.decode("utf-8")
+    GID = subprocess.Popen('id -g', shell=True, stdout=subprocess.PIPE) 
+    for line in GID.stdout:
+        GID = line.decode("utf-8")
+    options["Group"] = UID+":"+GID
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
@@ -240,10 +245,30 @@ elif analysis == "3" or analysis == "hybrid":
     os.system(short_read)
 #LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
     print("\n[STARTING] Hybrid assembly preparation: Long reads")
-    print("\nDemultiplexing Long reads")
-    os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh ' +options["MinIon"]+' '+options["Results"]+' '+options["Threads"])
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/read_processor_log-2019-06-05_13-13-20.log")
+    if not my_file.is_file():
+        #file doesn't exist -> guppy demultiplex hasn't been run
+        if sys == "UNIX":
+            os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
+        print("\nDemultiplexing Long reads")
+        os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
+        +options["MinIon"]+' '\
+        +options["Results"]+' '\
+        +options["Run"]+' '\
+        +options["Threads"])
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/none.fastq")
+    if not my_file.is_file():
+        #file doesn't exist -> porechop trimming hasn't been run
+        if sys == "UNIX":
+            os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
+        print("\nTrimming Long reads")
+        os.system('sh ./Scripts/Hybrid/Long_read/03_Trimming.sh '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
+        +options["Results"]+' '\
+        +options["Run"]+' '\
+        +options["Threads"])
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
 #===========================================================================================================
 

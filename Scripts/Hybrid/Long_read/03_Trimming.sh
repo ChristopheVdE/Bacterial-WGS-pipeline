@@ -12,7 +12,8 @@ usage() {
 	errorcode=" \nERROR -> This script needs 2 parameters:\n
 		1: Path to the fastq files you want to demultiplex\n
         2: Location to save the demultiplexing results\n
-        3: [OPTIONAL] Ammount of threads to use (default = 1)\n"
+		3: [OPTIONAL] Run date\n
+        4: [OPTIONAL] Ammount of threads to use (default = 1)\n"
 	echo ${errorcode};
 	exit 1;
 }
@@ -24,8 +25,8 @@ echo
 
 #VARIABLES=================================================================================================
 Input=$1
-Output="$2/Hybrid/02_Long_reads/03_Trimming"
-threads=${3:-"1"}
+Output="$2/Hybrid/$3/02_Long_reads/03_Trimming"
+threads=${4:-"1"}
 #==========================================================================================================
 
 #DEMULTIPLEXING + TRIMMING=================================================================================
