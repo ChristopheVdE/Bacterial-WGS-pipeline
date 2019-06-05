@@ -257,11 +257,11 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Run"]+' '\
         +options["Threads"])
     else:
-        print("Results already exist, Nothing to be done")
+        print("Results already exist, nothing to be done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
 
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/none.fastq")
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/demultiplex_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         if sys == "UNIX":
@@ -273,7 +273,7 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Run"]+' '\
         +options["Threads"])
     else:
-        print("Results already exist, Nothing to be done")
+        print("Results already exist, nothing to be done")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
 
 #===========================================================================================================
