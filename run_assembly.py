@@ -257,7 +257,7 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Run"]+' '\
         +options["Threads"])
     else:
-        print("Nothing to be done")
+        print("Results already exist, Nothing to be done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
 
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
@@ -273,7 +273,7 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Run"]+' '\
         +options["Threads"])
     else:
-        print("Nothing to be done")
+        print("Results already exist, Nothing to be done")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
 
 #===========================================================================================================
