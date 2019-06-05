@@ -16,6 +16,7 @@ import platform
 import subprocess
 import string
 from datetime import date
+import getpass
 #===========================================================================================================
 
 #GENERAL====================================================================================================
@@ -39,6 +40,10 @@ options = {}
 options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
 #GET RUN DATE-----------------------------------------------------------------------------------------------
 options["Run"] = date.today().strftime("%Y%m%d")
+#LINUX OS: GET USER ID AND GROUP ID-------------------------------------------------------------------------
+if sys == "UNIX":
+    UID = getpass.getuser()
+    options["Group"] = UID+":docker"
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
@@ -60,7 +65,8 @@ def correct_path(dictionairy):
                     options[key+"_m"] = value.replace(i+":\\","/"+i.lower()+"//").replace('\\','/')
             #print(" - "+ key +" location ({}) changed to: {}".format(str(options[key][value]),str(options[key+"_m"][value])))
         else:
-            options[key+"_m"] = value
+            if key != "Threads" and key != "Run" and key != "Analysis" and key != "Group":
+                options[key+"_m"] = value
     return options
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
 
