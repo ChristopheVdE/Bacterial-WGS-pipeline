@@ -41,5 +41,5 @@ for key, value in samples.items():
         -t "+Threads+" \
         --no_correct \
         --start_genes thrl \
-        2>&1 | tee -a"+Results)
+        2>&1 | tee -a "+Results)
 #==========================================================================================================
