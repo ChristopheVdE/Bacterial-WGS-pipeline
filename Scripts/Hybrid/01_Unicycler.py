@@ -17,14 +17,15 @@ Threads = sys.argv[5]
 
 #READ CORRESPONDING_SAMPLES.TXT============================================================================
 print("Collecting data of corresponding Illumina and MinIon samples")
-file = open(cor_samples)
+file = open(cor_samples, "r")
 c = 0
 samples = {}
-for line in samples:
+for line in file:
     if c >= 1:
         #skip header line
-        ids = line.split("\t")
+        ids = line.replace('\n','').split(",")
         samples[ids[0]] = ids[1]
+    c +=1
 file.close()
 #==========================================================================================================
 
@@ -33,11 +34,12 @@ file.close()
 for key, value in samples.items():
     print("Creating hybrid assembly with Illumina sample: "+value+" and MinIon sample with Barcode: "+key)
     os.system("unicycler \
-        -1 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R1_001_P.fastq.gz.fastq.gz \
-        -2 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R2_001_P.fastq.gz.fastq.gz \
+        -1 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R1_001_P.fastq.gz \
+        -2 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R2_001_P.fastq.gz \
         -l "+MinIon+"/BC"+key+".fastq.gz \
-        -o "+Results+" \
+        -o "+Results+"/"+value+" \
         -t "+Threads+" \
         --no_correct \
-        --start_genes thrl")
+        --start_genes thrl \
+        2>&1 | tee -a"+Results)
 #==========================================================================================================

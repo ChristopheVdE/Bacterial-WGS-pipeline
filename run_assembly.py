@@ -53,7 +53,6 @@ if sys == "UNIX":
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
-#INPUT------------------------------------------------------------------------------------------------------
 #PATH CORRECTION--------------------------------------------------------------------------------------------
 def correct_path(dictionairy):
     global options
@@ -75,7 +74,6 @@ def correct_path(dictionairy):
                 options[key+"_m"] = value
     return options
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
-
 #SHORT READ SAMPLE LIST CREATION----------------------------------------------------------------------------
 def sample_list(Illumina):
     ids =[]
@@ -293,7 +291,7 @@ elif analysis == "3" or analysis == "hybrid":
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/assembly.fasta")
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
-        os.system('python3 ./Scripts/Hybrid/Long_read/01_Unicycler.py '\
+        os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\

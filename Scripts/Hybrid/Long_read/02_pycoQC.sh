@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ###########################################################################################################
-#NAME SCRIPT: 02_pycoQC.py
+#NAME SCRIPT: 02_pycoQC.sh
 #AUTHOR: Christophe Van den Eynde  
 #Intermediate QC for nanopore reads
-#USAGE: ./02_pycoQC.py
+#USAGE: ./02_pycoQC.sh
 ###########################################################################################################
