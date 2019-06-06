@@ -299,6 +299,15 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Threads"])
     else:
         print("Results already exist, nothing to be done")
+#BANDAGE----------------------------------------------------------------------------------------------------
+    print("Bandage is an optional step used to visualise the created assemblys, and is completely manual")
+    Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
+    if Bandage == "y":
+        Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+        while Bandage_done != 'y':
+            Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+    elif Bandage == "n":
+        print("skipping Bandage step")
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
