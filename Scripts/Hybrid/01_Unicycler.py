@@ -12,6 +12,7 @@ Illumina = sys.argv[1]
 MinIon = sys.argv[2]
 Results = sys.argv[3]
 cor_samples = sys.argv[4]
+Threads = sys.argv[5]
 #==========================================================================================================
 
 #READ CORRESPONDING_SAMPLES.TXT============================================================================
@@ -32,8 +33,11 @@ file.close()
 for key, value in samples.items():
     print("Creating hybrid assembly with Illumina sample: "+value+" and MinIon sample with Barcode: "+key)
     os.system("unicycler \
-        -1 "+Illumina+"/"+value+"_L001_R1_001.fastq.gz.fastq.gz \
-        -2 "+Illumina+"/"+value+"_L001_R2_001.fastq.gz.fastq.gz \
+        -1 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R1_001_P.fastq.gz.fastq.gz \
+        -2 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R2_001_P.fastq.gz.fastq.gz \
         -l "+MinIon+"/BC"+key+".fastq.gz \
-        -o output_dir")
+        -o "+Results+" \
+        -t "+Threads+" \
+        --no_correct \
+        --start_genes thrl")
 #==========================================================================================================

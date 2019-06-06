@@ -17,6 +17,7 @@ import subprocess
 import string
 from datetime import date
 from pathlib import Path
+import shutil
 #===========================================================================================================
 
 #GENERAL====================================================================================================
@@ -197,6 +198,7 @@ elif analysis == "3" or analysis == "hybrid":
     options["MinIon"] = input("Input location of MinIon sample files here: \n")
     options["Illumina"] = input("Input location of Illumina sample files here: \n")
     options["Results"] = input("Input location to store the results here \n")
+    options["Cor_samples"] = input("Input location of text file containing info on wich Illumina smapels correspond with which MinIon barcode: \n")
     options["Threads"] = str(input("Input number of threads here: \n"))
     advanced = input("Go to advanced options? (y/n): ").lower()
     if advanced == "y" or advanced =="yes":
@@ -205,6 +207,8 @@ elif analysis == "3" or analysis == "hybrid":
     folders = [options["Results"]+"/Hybrid/"+options["Run"],]
     for i in folders:
         os.makedirs(i, exist_ok=True)
+#MOVE (AND RENAME) options["Cor_samples"] TO options["Results"] FOLDER--------------------------------------
+    shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
     correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
@@ -259,7 +263,8 @@ elif analysis == "3" or analysis == "hybrid":
     else:
         print("Results already exist, nothing to be done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
-    os.mkdir(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
+    if not os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/"):
+        os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
     print("\nTrimming Long reads")
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/demultiplex_summary.txt")
@@ -275,13 +280,27 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Threads"])
         #creation of summary table of demultiplexig results (guppy and porechop)
         os.system("python3 "+options["Scripts"]+"/Hybrid/Long_read/04_demultiplex_compare.py "\
-        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/" \
-        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/" \
+        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/ "\
+        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/ "\
         +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
     else:
         print("Results already exist, nothing to be done")
+    print("[COMPLETED] Hybrid assembly preparation: Long reads")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
-
+    print("\n[STARTING] Unicycler: hybrid assembly")
+    if not os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/"):
+        os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/")
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/assembly.fasta")
+    if not my_file.is_file():
+        #file doesn't exist -> porechop trimming hasn't been run
+        os.system('python3 ./Scripts/Hybrid/Long_read/01_Unicycler.py '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
+        +options["Threads"])
+    else:
+        print("Results already exist, nothing to be done")
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================

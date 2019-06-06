@@ -21,6 +21,8 @@ try:
             Threads = line.replace("Threads=",'').replace('\n','')
         elif "Run" in line:
             Run = line.replace("Run=",'').replace('\n','')
+        elif "Group" in line:
+            Group = line.replace("Group=",'').replace('\n','')
     env.close()
 except:
     print("The current date doesn't match the date at wich the analysis was started.\n \
