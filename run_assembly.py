@@ -179,7 +179,7 @@ if analysis == "1" or analysis == "short":
 elif analysis == "2" or analysis == "long":
 #GET INPUT--------------------------------------------------------------------------------------------------
     print("\nLong read assembly selected.")
-    options["MinIon"] = input("Input location of MinIon sample files here: \n")
+    options["MinIon_fastq"] = input("Input location of MinIon sample files here: \n")
     options["Results"] = input("Input location to store the results here : \n")
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
@@ -193,10 +193,12 @@ elif analysis == "2" or analysis == "long":
 elif analysis == "3" or analysis == "hybrid":
 #GET INPUT--------------------------------------------------------------------------------------------------
     print("\nHYBRID ASSEMBLY"+"="*65+"\nOPTIONS"+"-"*73)
-    options["MinIon"] = input("Input location of MinIon sample files here: \n")
     options["Illumina"] = input("Input location of Illumina sample files here: \n")
+    options["MinIon_fast5"] = input("Input location of MinIon sample files (fast5-format) here: \n")   
+    options["MinIon_fastq"] = input("Input location of MinIon sample files (fastq-format) here: \n") 
     options["Results"] = input("Input location to store the results here \n")
     options["Cor_samples"] = input("Input location of text file containing info on wich Illumina smapels correspond with which MinIon barcode: \n")
+    options["Start_genes"] = input("Input location of multifasta containing start genes to search for: \n")
     options["Threads"] = str(input("Input number of threads here: \n"))
     advanced = input("Go to advanced options? (y/n): ").lower()
     if advanced == "y" or advanced =="yes":
@@ -207,6 +209,7 @@ elif analysis == "3" or analysis == "hybrid":
         os.makedirs(i, exist_ok=True)
 #MOVE (AND RENAME) options["Cor_samples"] TO options["Results"] FOLDER--------------------------------------
     shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
+    shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
     correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
@@ -254,15 +257,29 @@ elif analysis == "3" or analysis == "hybrid":
         if sys == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
-        +options["MinIon"]+' '\
+        +options["MinIon_fastq"]+' '\
         +options["Results"]+' '\
         +options["Run"]+' '\
         +options["Threads"])
+        print("Done")
     else:
         print("Results already exist, nothing to be done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
+    print("\nPerforming QC on Long reads")
     if not os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/"):
         os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/QC_Long_reads.html")
+    if not my_file.is_file():
+        #file doesn't exist -> pycoqc hasn't been run
+        if sys == "UNIX":
+            os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
+        os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
+        +options["MinIon_fast5"]+' '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+' '\
+        +options["Threads"])
+        print("Done")
+    else:
+        print("Results already exist, nothing to be done")
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
     print("\nTrimming Long reads")
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/demultiplex_summary.txt")
@@ -271,7 +288,7 @@ elif analysis == "3" or analysis == "hybrid":
         if sys == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
         #demultiplex correct + trimming 
-        os.system('sh ./Scripts/Hybrid/Long_read/03_Trimming.sh '\
+        os.system('sh '+options["Scripts"]+'/Hybrid/Long_read/03_Trimming.sh '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
         +options["Results"]+' '\
         +options["Run"]+' '\
@@ -296,6 +313,7 @@ elif analysis == "3" or analysis == "hybrid":
         +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
         +options["Threads"])
     else:
         print("Results already exist, nothing to be done")

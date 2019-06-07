@@ -12,7 +12,8 @@ Illumina = sys.argv[1]
 MinIon = sys.argv[2]
 Results = sys.argv[3]
 cor_samples = sys.argv[4]
-Threads = sys.argv[5]
+start_genes = sys.argv[5]
+Threads = sys.argv[6]
 #==========================================================================================================
 
 #READ CORRESPONDING_SAMPLES.TXT============================================================================
@@ -40,6 +41,6 @@ for key, value in samples.items():
         -o "+Results+"/"+value+" \
         -t "+Threads+" \
         --no_correct \
-        --start_genes thrl \
+        --start_genes "+start_genes+" \
         2>&1 | tee -a "+Results)
 #==========================================================================================================
