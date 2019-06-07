@@ -253,20 +253,29 @@ elif analysis == "3" or analysis == "hybrid":
     folders = [options["Results"]+"/Hybrid/"+options["Run"],]
     for i in folders:
         os.makedirs(i, exist_ok=True)
+#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
+    correct_path(options)
+#SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
+    if not settings == '':
+        loc = open(settings, 'a')
+        loc.write("\n#CONVERTED PATHS"+'='*92)
+        for key, value in options:
+            if key == "Illumina_m" or key == "MinIon_fast5" or key == "MinIon_fastq" or key == "Results_m" or key == "Start_genes_m":
+                loc.write(key+'='+value+'\n')
+        loc.write("\n"+'='*108)            
+        loc.close()
+    else:
+        loc = open(options["Results"]+"/Hybrid/"+options["Run"]+"/environment.txt", mode="w")
+        for key, value in options.items():
+            if not key == "Threads":
+                loc.write(key+"="+value+"\n")
+            else:
+                loc.write(key+"="+value)  
+        loc.close()
 #MOVE (AND RENAME) options["Cor_samples"] TO options["Results"] FOLDER--------------------------------------
     shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
     shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
     #settings-file to results-folder
-#CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
-    correct_path(options)
-#SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
-    loc = open(options["Results"]+"/Hybrid/"+options["Run"]+"/environment.txt", mode="w")
-    for key, value in options.items():
-        if not key == "Threads":
-            loc.write(key+"="+value+"\n")
-        else:
-            loc.write(key+"="+value)  
-    loc.close()
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
     file = open(options["Results"]+"/Hybrid/"+options["Run"]+"/sampleList.txt",mode="w")
     for i in sample_list(options["Illumina"]):
