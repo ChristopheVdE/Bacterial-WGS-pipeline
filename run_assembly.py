@@ -18,13 +18,14 @@ import string
 from datetime import date
 from pathlib import Path
 import shutil
+import sys
 #===========================================================================================================
 
 #GENERAL====================================================================================================
 #FETCH OS-TYPE----------------------------------------------------------------------------------------------
-system=platform.system()
+system = platform.system()
 if "Windows" in system:
-    sys="Windows"
+    system = "Windows"
     print("\nWindows based system detected ({})\n".format(system))
     # check if HyperV is enabled (indication of docker Version, used to give specific tips on preformance increase)
     HV = subprocess.Popen('powershell.exe get-service | findstr vmcompute', shell=True, stdout=subprocess.PIPE) 
@@ -34,7 +35,7 @@ if "Windows" in system:
         else: 
             HyperV="False" 
 else:
-    sys="UNIX"
+    system="UNIX"
     print("\nUNIX based system detected ({})\n".format(system))
 #FIND SCRIPTS FOLDER LOCATION-------------------------------------------------------------------------------
 options = {}
@@ -42,7 +43,7 @@ options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
 #GET RUN DATE-----------------------------------------------------------------------------------------------
 options["Run"] = date.today().strftime("%Y%m%d")
 #LINUX OS: GET USER ID AND GROUP ID-------------------------------------------------------------------------
-if sys == "UNIX":
+if system == "UNIX":
     UID = subprocess.Popen('id -u', shell=True, stdout=subprocess.PIPE)
     for line in UID.stdout:
         UID = line.decode("utf-8")
@@ -53,6 +54,29 @@ if sys == "UNIX":
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
+#SETTINGS FILE PARSING--------------------------------------------------------------------------------------
+def settings_parse(settings):
+    file = open("settings",'r')
+    global options
+    global analysis
+    options = {}
+    for line in file:
+        if  "Illumina=" in line:
+            options["Illumina"] = line.replace('Illumina=','').replace('\n','')
+        elif "MinIon_fast5=" in line:
+            options["MinIon_fast5"] = line.replace('MinIon_fast5=','').replace('\n','')
+        elif "MinIon_fastq=" in line:
+            options["MinIon_fastq"] = line.replace('MinIon_fastq=','').replace('\n','')
+        elif "Results=" in line:
+            options["Results"] = line.replace('Results=','').replace('\n','')
+        elif "Barcode_kit=" in line:
+            options["Barcode_kit"] = line.replace('Barcode_kit=','').replace('\n','')
+        elif "Threads=" in line:
+            options["Threads"] = line.replace('Threads=','').replace('\n','')
+        elif "Start_genes" in line:
+            options["Start_genes"] = line.replace('Start_genes=','').replace('\n','')
+    file.close()
+    return options
 #PATH CORRECTION--------------------------------------------------------------------------------------------
 def correct_path(dictionairy):
     global options
@@ -60,7 +84,7 @@ def correct_path(dictionairy):
     options = {}
     for key, value in options_copy.items():
         options[key] = value
-        if sys=="Windows":
+        if system=="Windows":
             #print("\nConverting Windows paths for use in Docker:")
             for i in list(string.ascii_lowercase+string.ascii_uppercase):
                 options[key] = value
@@ -86,12 +110,12 @@ def sample_list(Illumina):
 
 #ANALYSIS TYPE==============================================================================================
 #INPUT------------------------------------------------------------------------------------------------------
-print("ANALYSIS TYPE"+"="*67)
+print("ANALYSIS TYPE"+"="*87)
 print(" - For short read assembly, input: '1' or 'short' \
     \n - For long read assembly, input: '2' or 'long' \
     \n - For hybrid assembly, input: '3' or 'hybrid'")
 analysis = input("\nInput analysis type here: ")
-print("="*80)
+print("="*100)
 #SAVE INPUT-------------------------------------------------------------------------------------------------
 if analysis == "1" or "short":
     options["Analysis"] = "short"
@@ -192,17 +216,39 @@ elif analysis == "2" or analysis == "long":
 #HYBRID ASSEMBLY============================================================================================
 elif analysis == "3" or analysis == "hybrid":
 #GET INPUT--------------------------------------------------------------------------------------------------
-    print("\nHYBRID ASSEMBLY"+"="*65+"\nOPTIONS"+"-"*73)
-    options["Illumina"] = input("Input location of Illumina sample files here: \n")
-    options["MinIon_fast5"] = input("Input location of MinIon sample files (fast5-format) here: \n")   
-    options["MinIon_fastq"] = input("Input location of MinIon sample files (fastq-format) here: \n") 
-    options["Results"] = input("Input location to store the results here \n")
-    options["Cor_samples"] = input("Input location of text file containing info on wich Illumina smapels correspond with which MinIon barcode: \n")
-    options["Start_genes"] = input("Input location of multifasta containing start genes to search for: \n")
-    options["Threads"] = str(input("Input number of threads here: \n"))
-    advanced = input("Go to advanced options? (y/n): ").lower()
-    if advanced == "y" or advanced =="yes":
-        print("ADVANCED OPTIONS"+"-"*64)
+    print("\n[HYBRID ASSEMBLY] SETTINGS"+"="*74)
+    try:
+        settings = sys.argv[2]
+    except:
+    #ASK FOR SETTINGS FILE----------------------------------------------------------------------------------
+        question = input("Do you have a premade settings-file that you want to use? (y/n) \
+            \nPress 'n' to automatically create your own settings-file using the questions asked by this script: ").lower()
+        if question == "y":
+            settings = input("\nInput location of settings-file here: \n")
+        #PARSE FILE
+            print("\nParsing settings file")
+            settings_parse(settings)
+            #convert paths if needed --> function
+            #append converted paths to settings-file --> function
+            print("Done")
+        elif question == "n":
+    #REQUIRED INPUT----------------------------------------------------------------------------------------
+            print("\nSHORT READS"+'-'*89)
+            options["Illumina"] = input("Input location of Illumina sample files here: \n")
+            print("\nLONG READS"+'-'*90)
+            options["MinIon_fast5"] = input("Input location of MinIon sample files (fast5-format) here: \n")   
+            options["MinIon_fastq"] = input("Input location of MinIon sample files (fastq-format) here: \n") 
+            print("\nRESULTS"+'-'*93)
+            options["Results"] = input("Input location to store the results here \n")
+            print("SAMPLE INFO")
+            options["Cor_samples"] = input("Input location of text file containing info on wich Illumina samples correspond with which MinIon barcode: \n")
+    #OPTIONAL INPUT----------------------------------------------------------------------------------------
+            print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
+            advanced = input("Show optional settings? (y/n): ").lower()
+            if advanced == "y" or advanced =="yes":
+                options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
+                options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
+                options["Threads"] = str(input("Input number of threads here: \n"))
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
     folders = [options["Results"]+"/Hybrid/"+options["Run"],]
     for i in folders:
@@ -210,6 +256,7 @@ elif analysis == "3" or analysis == "hybrid":
 #MOVE (AND RENAME) options["Cor_samples"] TO options["Results"] FOLDER--------------------------------------
     shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
     shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
+    #settings-file to results-folder
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
     correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
@@ -254,7 +301,7 @@ elif analysis == "3" or analysis == "hybrid":
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
-        if sys == "UNIX":
+        if system == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
         +options["MinIon_fastq"]+' '\
@@ -271,7 +318,7 @@ elif analysis == "3" or analysis == "hybrid":
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/QC_Long_reads.html")
     if not my_file.is_file():
         #file doesn't exist -> pycoqc hasn't been run
-        if sys == "UNIX":
+        if system == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
         +options["MinIon_fast5"]+' '\
@@ -285,7 +332,7 @@ elif analysis == "3" or analysis == "hybrid":
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/demultiplex_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
-        if sys == "UNIX":
+        if system == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
         #demultiplex correct + trimming 
         os.system('sh '+options["Scripts"]+'/Hybrid/Long_read/03_Trimming.sh '\

@@ -1,11 +1,2 @@
+*.fasta
 .snakemake
-*.gz
-*.html
-*.zip
-*.fo
-*.txt
-*.log
-*.json
-*.info
-environment.txt
-/data
