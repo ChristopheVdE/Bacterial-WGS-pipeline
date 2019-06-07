@@ -22,7 +22,7 @@ import shutil
 
 #GENERAL====================================================================================================
 #FETCH OS-TYPE----------------------------------------------------------------------------------------------
-system=platform.platform()
+system=platform.system()
 if "Windows" in system:
     sys="Windows"
     print("\nWindows based system detected ({})\n".format(system))
