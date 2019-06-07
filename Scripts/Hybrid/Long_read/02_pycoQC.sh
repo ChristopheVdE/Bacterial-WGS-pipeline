@@ -33,7 +33,7 @@ Fast5_to_seq_summary \
     --fast5_dir ${fast5} \
     --seq_summary_fn ${results}/sequencing_summary.txt \
     -t ${Threads} \
-    2>&1 | tee -a ${results}/fast5-to-fastq_stdin_out.txt
+    2>&1 | tee -a ${results}/02_Long_reads/02_QC/fast5-to-fastq_stdin_out.txt
 #----------------------------------------------------------------------------------------------------------
 
 #PREFORM PYCOQC--------------------------------------------------------------------------------------------
@@ -42,5 +42,5 @@ pycoQC \
     --barcode_file ${results}/02_Long_reads/01_Demultiplex/barcoding_summary.txt \
     --html_outputfile ${resutls}/02_Long_reads/02_QC/QC_Long_reads.html \
     --json_outputfile ${resutls}/02_Long_reads/02_QC/QC_Long_reads.json \
-    2>&1 |tee -a ${results}/pycoQC_stdin_out.txt
+    2>&1 |tee -a ${results}/02_Long_reads/02_QC/pycoQC_stdin_out.txt
 #----------------------------------------------------------------------------------------------------------
