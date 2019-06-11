@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ###########################################################################################################
-#NAME SCRIPT: 01_demultiplex.sh
+#NAME SCRIPT: 03_Trimming.sh
 #AUTHOR: Christophe Van den Eynde  
 #demuliplex basecalled reads
-#USAGE: ./01demultiplex.sh ${input} ${output} ${barcode}
+#USAGE: ./03_Trimming.sh ${input} ${output} ${barcode}
 ###########################################################################################################
 
 #FUNCTION==================================================================================================
@@ -13,8 +13,7 @@ usage() {
 		1: Path to the fastq files you want to demultiplex\n
         2: Location to save the demultiplexing results\n
 		3: Run date\n
-        4: [OPTIONAL] Ammount of threads to use (default = 1)\n
-        5: [OPTIONAL] The Barcoding kit used during the analysis (default = 'EXP-NBD104')\n"; 
+        4: [OPTIONAL] Ammount of threads to use (default = 1)\n"
 	echo ${errorcode};
 	exit 1;
 }
@@ -25,19 +24,25 @@ echo
 #==========================================================================================================
 
 #VARIABLES=================================================================================================
-Input="$1"
-Output="$2/Long_reads/$3/01_Demultiplex"
+Input=$1
+Output="$2/Long_reads/$3/03_Trimming"
 threads=${4:-"1"}
-Barcode=${5:-"EXP-NBD104"}
 #==========================================================================================================
 
-#DEMULTIPLEXING============================================================================================
-# GUPPY ---------------------------------------------------------------------------------------------------
-guppy_barcoder \
---input_path "${Input}" \
---save_path "${Output}" \
---barcode_kits ${Barcode} \
--t ${threads} \
-#--verbose_logs \
+#DEMULTIPLEXING + TRIMMING=================================================================================
+# PORECHOP ON GUPPY----------------------------------------------------------------------------------------
+# run porechop on the reads, correcting demultiplexing done by guppy if required
+# porechop will demulitplex and trim reads at the same time 
+# disable auto-trimming: add --untrimmed
+
+mkdir -p "${Output}"
+
+porechop \
+-i "${Input}" \
+-b "${Output}" \
+--verbosity 1 \
+--threads ${threads} \
+--format fastq.gz \
+#--untrimmed \
 2>&1 | tee -a "${Output}/stdin_out.txt"
 #==========================================================================================================

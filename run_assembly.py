@@ -103,6 +103,7 @@ def correct_path(dictionairy):
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
 #SHORT READ SAMPLE LIST CREATION----------------------------------------------------------------------------
 def sample_list(Illumina):
+    global ids
     ids =[]
     for sample in os.listdir(Illumina):
         if ".fastq.gz" in sample:
@@ -205,15 +206,149 @@ if analysis == "1" or analysis == "short":
 #LONG READ ONLY ASSEMBLY====================================================================================
 elif analysis == "2" or analysis == "long":
 #GET INPUT--------------------------------------------------------------------------------------------------
-    print("\nLong read assembly selected.")
-    options["MinIon_fastq"] = input("Input location of MinIon sample files here: \n")
-    options["Results"] = input("Input location to store the results here : \n")
+    print("\n[LONG READ ASSEMBLY] SETTINGS"+"="*71)
+    try:
+        settings = sys.argv[2]
+    except:
+    #ASK FOR SETTINGS FILE----------------------------------------------------------------------------------
+        question = input("Do you have a premade settings-file that you want to use? (y/n) \
+            \nPress 'n' to automatically create your own settings-file using the questions asked by this script: ").lower()
+        if question == "y":
+            settings = input("\nInput location of settings-file here: \n")
+        #PARSE FILE
+            print("\nParsing settings file")
+            settings_parse(settings)
+            #convert paths if needed --> function
+            #append converted paths to settings-file --> function
+            print("Done")
+        elif question == "n":
+    #REQUIRED INPUT----------------------------------------------------------------------------------------
+            print("\nLONG READS"+'-'*90)
+            options["MinIon_fast5"] = input("Input location of MinIon sample files (fast5-format) here: \n")   
+            options["MinIon_fastq"] = input("Input location of MinIon sample files (fastq-format) here: \n") 
+            print("\nRESULTS"+'-'*93)
+            options["Results"] = input("Input location to store the results here \n")
+    #OPTIONAL INPUT----------------------------------------------------------------------------------------
+            print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
+            advanced = input("Show optional settings? (y/n): ").lower()
+            if advanced == "y" or advanced =="yes":
+                options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
+                options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
+                options["Threads"] = str(input("Input number of threads here: \n"))
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
+    folders = [options["Results"]+"/Hybrid/"+options["Run"],]
+    for i in folders:
+        os.makedirs(i, exist_ok=True)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
+    correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
-#CREATE MINION SAMPLE LIST + WRITE TO FILE------------------------------------------------------------------
-#COPY MINION SAMPLES TO RESULTS-----------------------------------------------------------------------------
-#SHORT READS: RUN PIPELINE----------------------------------------------------------------------------------
+    if not settings == '':
+        #read content of file (apparently read&write can't happen at the same time)
+        loc = open(settings, 'r')
+        content = loc.read()
+        #print(content)
+        loc.close()
+        #append converted paths to file
+        loc = open(settings, 'a')
+        if not "#CONVERTED PATHS" in content:
+            loc.write("\n\n#CONVERTED PATHS"+'='*92)
+            for key, value in options.items():
+                print(options)
+                if not key in content:
+                    print(key)
+                    if key == "Illumina_m" or key == "MinIon_fast5_m" or key == "MinIon_fastq_m" or key == "Results_m" or key == "Start_genes_m":
+                        loc.write('\n'+key+'='+value)
+            loc.write("\n"+'='*108)          
+        loc.close()
+    else:
+        loc = open(options["Results"]+"/Long_Reads/"+options["Run"]+"/environment.txt", mode="w")
+        for key, value in options.items():
+            if not key == "Threads":
+                loc.write(key+"="+value+"\n")
+            else:
+                loc.write(key+"="+value)  
+        loc.close()
+#MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
+    #shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
+    shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
+    #settings-file to results-folder#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
+    print("\n[STARTING] Long read assembly: preparation")
+    print("\nDemultiplexing Long reads")
+    my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/barcoding_summary.txt")
+    if not my_file.is_file():
+        #file doesn't exist -> guppy demultiplex hasn't been run
+        if system == "UNIX":
+            os.system("dos2unix "+options["Scripts"]+"/Long_read/01_demultiplex.sh")
+        os.system('sh ./Scripts/Long_read/01_demultiplex.sh '\
+            +options["MinIon_fastq"]+' '\
+            +options["Results"]+' '\
+            +options["Run"]+' '\
+            +options["Threads"])
+        print("Done")
+    else:
+        print("Results already exist, nothing to be done")
+#LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
+    print("\nPerforming QC on Long reads")
+    if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/"):
+        os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/")
+    my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/QC_Long_reads.html")
+    if not my_file.is_file():
+        #file doesn't exist -> pycoqc hasn't been run
+        if system == "UNIX":
+            os.system("dos2unix "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
+        os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
+            +options["MinIon_fast5"]+' '\
+            +options["Results"]+'/Long_read/'+options["Run"]+' '\
+            +options["Threads"])
+        print("Done")
+    else:
+        print("Results already exist, nothing to be done")
+#LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
+    print("\nTrimming Long reads")
+    my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/demultiplex_summary.txt")
+    if not my_file.is_file():
+        #file doesn't exist -> porechop trimming hasn't been run
+        if system == "UNIX":
+            os.system("dos2unix "+options["Scripts"]+"/Long_read/03_Trimming.sh")
+        #demultiplex correct + trimming 
+        os.system('sh '+options["Scripts"]+'/Long_read/03_Trimming.sh '\
+            +options["Results"]+'/Long_reads/'+options["Run"]+'/01_Demultiplex '\
+            +options["Results"]+' '\
+            +options["Run"]+' '\
+            +options["Threads"])
+        #creation of summary table of demultiplexig results (guppy and porechop)
+        os.system("python3 "+options["Scripts"]+"/Long_read/04_demultiplex_compare.py "\
+            +options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/ "\
+            +options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/ "\
+            +options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/")
+    else:
+        print("Results already exist, nothing to be done")
+    print("[COMPLETED] Hybrid assembly preparation: Long reads")
+#HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
+    print("\n[STARTING] Unicycler: hybrid assembly")
+    if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"):
+        os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/")
+    my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/assembly.fasta")
+    if not my_file.is_file():
+        #file doesn't exist -> porechop trimming hasn't been run
+        os.system('python3 ./Scripts/Long_read/01_Unicycler.py '\
+            +options["Results"]+'/Long_reads/'+options["Run"]+'/03_Trimming '\
+            +options["Results"]+'/Long_reads/'+options["Run"]+'/04_Assembly '\
+            +options["Results"]+'/Long_reads/'+options["Run"]+'/start_genes.fasta '\
+            +options["Threads"])
+    else:
+        print("Results already exist, nothing to be done")
+#BANDAGE----------------------------------------------------------------------------------------------------
+    print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
+    Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
+    if Bandage == "y":
+        Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+        while Bandage_done != 'y':
+            Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+    elif Bandage == "n":
+        print("skipping Bandage step")
+#PROKKA-----------------------------------------------------------------------------------------------------
+
 #===========================================================================================================
 
 #HYBRID ASSEMBLY============================================================================================
@@ -285,7 +420,7 @@ elif analysis == "3" or analysis == "hybrid":
             else:
                 loc.write(key+"="+value)  
         loc.close()
-#MOVE (AND RENAME) options["Cor_samples"] TO options["Results"] FOLDER--------------------------------------
+#MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
     #shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
     shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
     #settings-file to results-folder
