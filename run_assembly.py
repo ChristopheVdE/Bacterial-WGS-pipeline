@@ -56,7 +56,7 @@ if system == "UNIX":
 #FUNCTIONS==================================================================================================
 #SETTINGS FILE PARSING--------------------------------------------------------------------------------------
 def settings_parse(settings):
-    file = open("settings",'r')
+    file = open(settings,'r')
     global options
     global analysis
     options = {}
@@ -69,12 +69,15 @@ def settings_parse(settings):
             options["MinIon_fastq"] = line.replace('MinIon_fastq=','').replace('\n','')
         elif "Results=" in line:
             options["Results"] = line.replace('Results=','').replace('\n','')
+        elif "Adaptors=" in line:
+            options["Adaptors"] = line.replace('Adaptors=','').replace('\n','')
         elif "Barcode_kit=" in line:
             options["Barcode_kit"] = line.replace('Barcode_kit=','').replace('\n','')
         elif "Threads=" in line:
             options["Threads"] = line.replace('Threads=','').replace('\n','')
         elif "Start_genes" in line:
             options["Start_genes"] = line.replace('Start_genes=','').replace('\n','')
+    options["Run"] = date.today().strftime("%Y%m%d")
     file.close()
     return options
 #PATH CORRECTION--------------------------------------------------------------------------------------------
@@ -257,12 +260,22 @@ elif analysis == "3" or analysis == "hybrid":
     correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
     if not settings == '':
+        #read content of file (apparently read&write can't happen at the same time)
+        loc = open(settings, 'r')
+        content = loc.read()
+        #print(content)
+        loc.close()
+        #append converted paths to file
         loc = open(settings, 'a')
-        loc.write("\n#CONVERTED PATHS"+'='*92)
-        for key, value in options:
-            if key == "Illumina_m" or key == "MinIon_fast5" or key == "MinIon_fastq" or key == "Results_m" or key == "Start_genes_m":
-                loc.write(key+'='+value+'\n')
-        loc.write("\n"+'='*108)            
+        if not "#CONVERTED PATHS" in content:
+            loc.write("\n\n#CONVERTED PATHS"+'='*92)
+            for key, value in options.items():
+                print(options)
+                if not key in content:
+                    print(key)
+                    if key == "Illumina_m" or key == "MinIon_fast5_m" or key == "MinIon_fastq_m" or key == "Results_m" or key == "Start_genes_m":
+                        loc.write('\n'+key+'='+value)
+            loc.write("\n"+'='*108)          
         loc.close()
     else:
         loc = open(options["Results"]+"/Hybrid/"+options["Run"]+"/environment.txt", mode="w")
@@ -273,7 +286,7 @@ elif analysis == "3" or analysis == "hybrid":
                 loc.write(key+"="+value)  
         loc.close()
 #MOVE (AND RENAME) options["Cor_samples"] TO options["Results"] FOLDER--------------------------------------
-    shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
+    #shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
     shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
     #settings-file to results-folder
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
@@ -313,10 +326,10 @@ elif analysis == "3" or analysis == "hybrid":
         if system == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
-        +options["MinIon_fastq"]+' '\
-        +options["Results"]+' '\
-        +options["Run"]+' '\
-        +options["Threads"])
+            +options["MinIon_fastq"]+' '\
+            +options["Results"]+' '\
+            +options["Run"]+' '\
+            +options["Threads"])
         print("Done")
     else:
         print("Results already exist, nothing to be done")
@@ -330,9 +343,9 @@ elif analysis == "3" or analysis == "hybrid":
         if system == "UNIX":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
-        +options["MinIon_fast5"]+' '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+' '\
-        +options["Threads"])
+            +options["MinIon_fast5"]+' '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+' '\
+            +options["Threads"])
         print("Done")
     else:
         print("Results already exist, nothing to be done")
@@ -345,15 +358,15 @@ elif analysis == "3" or analysis == "hybrid":
             os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
         #demultiplex correct + trimming 
         os.system('sh '+options["Scripts"]+'/Hybrid/Long_read/03_Trimming.sh '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
-        +options["Results"]+' '\
-        +options["Run"]+' '\
-        +options["Threads"])
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
+            +options["Results"]+' '\
+            +options["Run"]+' '\
+            +options["Threads"])
         #creation of summary table of demultiplexig results (guppy and porechop)
         os.system("python3 "+options["Scripts"]+"/Hybrid/Long_read/04_demultiplex_compare.py "\
-        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/ "\
-        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/ "\
-        +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
+            +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/ "\
+            +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/ "\
+            +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
     else:
         print("Results already exist, nothing to be done")
     print("[COMPLETED] Hybrid assembly preparation: Long reads")
@@ -365,16 +378,16 @@ elif analysis == "3" or analysis == "hybrid":
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
-        +options["Threads"])
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
+            +options["Threads"])
     else:
         print("Results already exist, nothing to be done")
 #BANDAGE----------------------------------------------------------------------------------------------------
-    print("Bandage is an optional step used to visualise the created assemblys, and is completely manual")
+    print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
     Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
     if Bandage == "y":
         Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
@@ -382,6 +395,8 @@ elif analysis == "3" or analysis == "hybrid":
             Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
     elif Bandage == "n":
         print("skipping Bandage step")
+#PROKKA-----------------------------------------------------------------------------------------------------
+
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
