@@ -5,9 +5,13 @@
 #USAGE: 'python3 01_Unicycler.py' (Linux) or 'python.exe 01_Unicycler.py' (Windows)
 ###########################################################################################################
 
-#TAKE INPUT FROM COMMAND LINE==============================================================================
+#Import packages===========================================================================================
 import os
 import sys
+from pathlib import Path
+#==========================================================================================================
+
+#TAKE INPUT FROM COMMAND LINE==============================================================================
 Illumina = sys.argv[1]
 MinIon = sys.argv[2]
 Results = sys.argv[3]
@@ -33,14 +37,18 @@ file.close()
 #RUN UNICYCLER=============================================================================================
 # unicycler \-1 short_reads_1.fastq.gz -2 short_reads_2.fastq.gz -l long_reads.fastq.gz -o output_dir
 for key, value in samples.items():
-    print("Creating hybrid assembly with Illumina sample: "+value+" and MinIon sample with Barcode: "+key)
-    os.system("unicycler \
-        -1 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R1_001_P.fastq.gz \
-        -2 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R2_001_P.fastq.gz \
-        -l "+MinIon+"/BC"+key+".fastq.gz \
-        -o "+Results+"/"+value+" \
-        -t "+Threads+" \
-        --no_correct \
-        --start_genes "+start_genes+" \
-        2>&1 | tee -a "+Results)
+    my_file = Path(Results+'/'+value+"/assembly.fasta")
+    if not my_file.is_file():
+        print("Creating hybrid assembly with Illumina sample: "+value+" and MinIon sample with Barcode: "+key)
+        os.system("unicycler \
+            -1 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R1_001_P.fastq.gz \
+            -2 "+Illumina+"/"+value+"/02_Trimmomatic/"+value+"_L001_R2_001_P.fastq.gz \
+            -l "+MinIon+"/BC"+key+".fastq.gz \
+            -o "+Results+"/"+value+" \
+            -t "+Threads+" \
+            --no_correct \
+            --start_genes "+start_genes+" \
+            2>&1 | tee -a "+Results)
+    else:
+        print("Results for "+value+" already exist, nothing to be done")
 #==========================================================================================================

@@ -426,7 +426,7 @@ elif analysis == "3" or analysis == "hybrid":
                 loc.write(key+"="+value)  
         loc.close()
 #MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
-    #shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
+    shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
     shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
     #settings-file to results-folder
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
@@ -511,21 +511,16 @@ elif analysis == "3" or analysis == "hybrid":
         print("Results already exist, nothing to be done")
     print("[COMPLETED] Hybrid assembly preparation: Long reads")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
+    if system == "UNIX":
+        os.system("dos2unix "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
     print("\n[STARTING] Unicycler: hybrid assembly")
-    if not os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/"):
-        os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/")
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/assembly.fasta")
-    if not my_file.is_file():
-        #file doesn't exist -> porechop trimming hasn't been run
-        os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
-            +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
-            +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
-            +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
-            +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
-            +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
-            +options["Threads"])
-    else:
-        print("Results already exist, nothing to be done")
+    os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
+        +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
+        +options["Threads"])
 #BANDAGE----------------------------------------------------------------------------------------------------
     print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
     Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
