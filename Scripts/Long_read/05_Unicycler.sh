@@ -35,7 +35,6 @@ unicycler \
 	-l "${MinIon}" \
 	-o "${Results}" \
 	-t "${threads}" \
-	--no_correct \
 	--start_genes "${start_genes}" \
 	2>&1 | tee -a "${Results}/${barcode}/stdin_out.txt"
 #==========================================================================================================
