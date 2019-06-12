@@ -81,6 +81,7 @@ def correct_path(dictionairy):
     global options
     options_copy = dictionairy
     options = {}
+    not_convert = ["Threads", "Run", "Analysis", "Group", "Barcode_kit", "Genus", "Species", "Kingdom", "Gram"]
     for key, value in options_copy.items():
         options[key] = value
         if system=="Windows":
@@ -93,7 +94,7 @@ def correct_path(dictionairy):
                     options[key+"_m"] = value.replace(i+":\\","/"+i.lower()+"//").replace('\\','/')
             #print(" - "+ key +" location ({}) changed to: {}".format(str(options[key][value]),str(options[key+"_m"][value])))
         else:
-            if key != "Threads" and key != "Run" and key != "Analysis" and key != "Group" and key != "Barcode_kit":
+            if key not in not_convert:
                 options[key+"_m"] = value
     return options
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
@@ -165,7 +166,7 @@ if analysis == "1" or analysis == "short":
         -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/snakemake:v2.2_stable \
         /bin/bash -c "cd /home/Snakemake/ && snakemake; \
-        dos2unix /home/Scripts/copy_snakemake_log.sh && sh /home/Scripts/copy_snakemake_log.sh"'
+        dos2unix -q /home/Scripts/copy_snakemake_log.sh && sh /home/Scripts/copy_snakemake_log.sh"'
 #SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE THE SAME-----------------------------------------
     if options["Illumina"] == options["Results"]:
         move = 'docker run -it --rm \
@@ -174,7 +175,7 @@ if analysis == "1" or analysis == "short":
             -v "'+options["Scripts_m"]+':/home/Scripts/" \
             christophevde/ubuntu_bash:v2.2_stable \
             /bin/bash -c \
-            "dos2unix /home/Scripts/Short_read/01_move_rawdata.bash \
+            "dos2unix -q /home/Scripts/Short_read/01_move_rawdata.bash \
             && sh /home/Scripts/Short_read/01_move_rawdata.bash ' + options["Analysis"]+'"'
         os.system(move)
         os.system(snake)
@@ -184,7 +185,7 @@ if analysis == "1" or analysis == "short":
             -v "'+options["Scripts_m"]+':/home/Scripts/" \
             christophevde/ubuntu_bash:v2.2_stable \
             /bin/bash -c \
-            "dos2unix home/Scripts/Short_read/02_delete_rawdata.bash \
+            "dos2unix -q home/Scripts/Short_read/02_delete_rawdata.bash \
             && sh home/Scripts/Short_read/02_delete_rawdata.bash ' + options["Analysis"]+'"'
         os.system(delete)
     #SHORT READS: RUN PIPELINE - RAWDATA AND RESULTS FOLDER ARE DIFFERENT---------------------------------------
@@ -196,7 +197,7 @@ if analysis == "1" or analysis == "short":
             -v "'+options["Results_m"]+':/home/Pipeline/" \
             christophevde/ubuntu_bash:v2.2_stable \
             /bin/bash -c \
-            "dos2unix /home/Scripts/Short_read/01_copy_rawdata.bash \
+            "dos2unix -q /home/Scripts/Short_read/01_copy_rawdata.bash \
             && sh /home/Scripts/Short_read/01_copy_rawdata.bash ' + options["Analysis"]+'"'
         os.system(copy)
         os.system(snake)
@@ -277,7 +278,7 @@ elif analysis == "2" or analysis == "long":
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
         if system == "UNIX":
-            os.system("dos2unix "+options["Scripts"]+"/Long_read/01_demultiplex.sh")
+            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Long_read/01_demultiplex.sh '\
             +options["MinIon_fastq"]+' '\
             +options["Results"]+' '\
@@ -294,7 +295,7 @@ elif analysis == "2" or analysis == "long":
     if not my_file.is_file():
         #file doesn't exist -> pycoqc hasn't been run
         if system == "UNIX":
-            os.system("dos2unix "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
+            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
             +options["MinIon_fast5"]+' '\
             +options["Results"]+'/Long_reads/'+options["Run"]+' '\
@@ -308,7 +309,7 @@ elif analysis == "2" or analysis == "long":
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         if system == "UNIX":
-            os.system("dos2unix "+options["Scripts"]+"/Long_read/03_Trimming.sh")
+            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/03_Trimming.sh")
         #demultiplex correct + trimming 
         os.system('sh '+options["Scripts"]+'/Long_read/03_Trimming.sh '\
             +options["Results"]+'/Long_reads/'+options["Run"]+'/01_Demultiplex '\
@@ -325,7 +326,7 @@ elif analysis == "2" or analysis == "long":
     print("[COMPLETED] Hybrid assembly preparation: Long reads")
 #LONG READ ASSEMBLY--------------------------------------------------------------------------------------------
     if system == "UNIX":
-        os.system("dos2unix "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
+        os.system("dos2unix -q "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
     print("\n[STARTING] Unicycler: Long read assembly")
     for bc in os.listdir(options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/"):
         bc = bc.replace('.fastq.gz','')
@@ -392,6 +393,13 @@ elif analysis == "3" or analysis == "hybrid":
                 options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
                 options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
                 options["Threads"] = str(input("Input number of threads here: \n"))
+                print("INFO FOR ANNOTATION"+"-"*89)
+                options["Genus"] = input("Input the genus of your sequenced organism here: \n")
+                options["Species"] = input("Input the species of your sequenced organism here: \n")
+                options["Kingdom"] = input("Input the Kingdom of your sequenced organism here: \n")
+                if options["Kingdom"] == "Bacteria":
+                    options["Gram"] = input("Input the gram-type of your bacteria here (-/neg +/pos): \n")
+        print('='*108)
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
     folders = [options["Results"]+"/Hybrid/"+options["Run"],]
     for i in folders:
@@ -442,7 +450,7 @@ elif analysis == "3" or analysis == "hybrid":
         -v "'+options["Results_m"]+':/home/Pipeline/" \
         -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/ubuntu_bash:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
+        /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
         && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+options["Run"]+'"'
     os.system(copy)
 #SHORT READS: TRIMMING & QC (DOCKER)------------------------------------------------------------------------
@@ -454,7 +462,7 @@ elif analysis == "3" or analysis == "hybrid":
         -v "'+options["Results_m"]+':/home/Pipeline/" \
         christophevde/snakemake:v2.3_stable \
         /bin/bash -c "cd /home/Scripts/Hybrid/Short_read && snakemake; \
-        dos2unix /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh \
+        dos2unix -q /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh \
         && sh /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh '+options["Run"]+'"'
     os.system(short_read)
 #LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
@@ -464,7 +472,7 @@ elif analysis == "3" or analysis == "hybrid":
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
         if system == "UNIX":
-            os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
+            os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
             +options["MinIon_fastq"]+' '\
             +options["Results"]+' '\
@@ -481,7 +489,7 @@ elif analysis == "3" or analysis == "hybrid":
     if not my_file.is_file():
         #file doesn't exist -> pycoqc hasn't been run
         if system == "UNIX":
-            os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
+            os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
             +options["MinIon_fast5"]+' '\
             +options["Results"]+'/Hybrid/'+options["Run"]+' '\
@@ -495,7 +503,7 @@ elif analysis == "3" or analysis == "hybrid":
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         if system == "UNIX":
-            os.system("dos2unix "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
+            os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
         #demultiplex correct + trimming 
         os.system('sh '+options["Scripts"]+'/Hybrid/Long_read/03_Trimming.sh '\
             +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
@@ -511,8 +519,6 @@ elif analysis == "3" or analysis == "hybrid":
         print("Results already exist, nothing to be done")
     print("[COMPLETED] Hybrid assembly preparation: Long reads")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
-    if system == "UNIX":
-        os.system("dos2unix "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
     print("\n[STARTING] Unicycler: hybrid assembly")
     os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
@@ -531,7 +537,22 @@ elif analysis == "3" or analysis == "hybrid":
     elif Bandage == "n":
         print("skipping Bandage step")
 #PROKKA-----------------------------------------------------------------------------------------------------
-
+    if system == "UNIX":
+        os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/02_Prokka.sh")
+    print("\n[STARTING] Prokka: hybrid assembly annotation")
+    for sample in os.listdir(options["Results"]+"/Hybrid/03_Assembly"):
+        my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/04_Prokka/"+sample+"/*.gff")
+        if not my_file.is_file():
+            os.system('sh '+options["Scripts"]+'/Hybrid/02_Prokka.sh '\
+                +options["Results"]+'/Hybrid/'+options["Run"]+'/04_Prokka/'+sample+' '\
+                +options["Genus"]+' '\
+                +options["Species"]+' '\
+                +options["Kingdom"]+' '\
+                +options["Gram"]+' '\
+                +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly/'+sample+' '\
+                +options["Threads"])
+        else:
+            print("Results already exist for "+sample+", nothing to be done")
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
