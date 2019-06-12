@@ -58,10 +58,8 @@ def settings_parse(settings):
     for line in file:
         if  "Illumina=" in line:
             options["Illumina"] = line.replace('Illumina=','').replace('\n','')
-        elif "MinIon_fast5=" in line:
-            options["MinIon_fast5"] = line.replace('MinIon_fast5=','').replace('\n','')
-        elif "MinIon_fastq=" in line:
-            options["MinIon_fastq"] = line.replace('MinIon_fastq=','').replace('\n','')
+        elif "MinIon=" in line:
+            options["MinIon"] = line.replace('MinIon=','').replace('\n','')
         elif "Results=" in line:
             options["Results"] = line.replace('Results=','').replace('\n','')
         elif "Adaptors=" in line:
@@ -225,8 +223,7 @@ elif analysis == "2" or analysis == "long":
     #REQUIRED INPUT----------------------------------------------------------------------------------------
             settings = ''
             print("\nLONG READS"+'-'*90)
-            options["MinIon_fast5"] = input("Input location of MinIon sample files (fast5-format) here: \n")   
-            options["MinIon_fastq"] = input("Input location of MinIon sample files (fastq-format) here: \n") 
+            options["MinIon"] = input("Input location of MinIon sample files here: \n")   
             print("\nRESULTS"+'-'*93)
             options["Results"] = input("Input location to store the results here \n")
             options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
@@ -257,7 +254,7 @@ elif analysis == "2" or analysis == "long":
             loc.write("\n\n#CONVERTED PATHS"+'='*92)
             for key, value in options.items():
                 if not key in content:
-                    if key == "Illumina_m" or key == "MinIon_fast5_m" or key == "MinIon_fastq_m" or key == "Results_m" or key == "Start_genes_m":
+                    if key == "Illumina_m" or key == "MinIon_m" or key == "Results_m" or key == "Start_genes_m":
                         loc.write('\n'+key+'='+value)
             loc.write("\n"+'='*108)          
         loc.close()
@@ -280,7 +277,7 @@ elif analysis == "2" or analysis == "long":
         if system == "UNIX":
             os.system("dos2unix -q "+options["Scripts"]+"/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Long_read/01_demultiplex.sh '\
-            +options["MinIon_fastq"]+' '\
+            +options["MinIon"]+'/fastq/pass '\
             +options["Results"]+' '\
             +options["Run"]+' '\
             +options["Threads"])
@@ -297,7 +294,7 @@ elif analysis == "2" or analysis == "long":
         if system == "UNIX":
             os.system("dos2unix -q "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
-            +options["MinIon_fast5"]+' '\
+            +options["MinIon"]+'/fast5 '\
             +options["Results"]+'/Long_reads/'+options["Run"]+' '\
             +options["Threads"])
         print("Done")
@@ -378,8 +375,7 @@ elif analysis == "3" or analysis == "hybrid":
             print("\nSHORT READS"+'-'*89)
             options["Illumina"] = input("Input location of Illumina sample files here: \n")
             print("\nLONG READS"+'-'*90)
-            options["MinIon_fast5"] = input("Input location of MinIon sample files (fast5-format) here: \n")   
-            options["MinIon_fastq"] = input("Input location of MinIon sample files (fastq-format) here: \n") 
+            options["MinIon"] = input("Input location of MinIon sample files here: \n")    
             print("\nRESULTS"+'-'*93)
             options["Results"] = input("Input location to store the results here \n")
             print("SAMPLE INFO")
@@ -421,7 +417,7 @@ elif analysis == "3" or analysis == "hybrid":
                 print(options)
                 if not key in content:
                     print(key)
-                    if key == "Illumina_m" or key == "MinIon_fast5_m" or key == "MinIon_fastq_m" or key == "Results_m" or key == "Start_genes_m":
+                    if key == "Illumina_m" or key == "MinIon_m" or key == "Results_m" or key == "Start_genes_m":
                         loc.write('\n'+key+'='+value)
             loc.write("\n"+'='*108)          
         loc.close()
@@ -474,7 +470,7 @@ elif analysis == "3" or analysis == "hybrid":
         if system == "UNIX":
             os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
-            +options["MinIon_fastq"]+' '\
+            +options["MinIon"]+'/fastq/pass '\
             +options["Results"]+' '\
             +options["Run"]+' '\
             +options["Threads"])
@@ -491,7 +487,7 @@ elif analysis == "3" or analysis == "hybrid":
         if system == "UNIX":
             os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
-            +options["MinIon_fast5"]+' '\
+            +options["MinIon"]+'/fast5 '\
             +options["Results"]+'/Hybrid/'+options["Run"]+' '\
             +options["Threads"])
         print("Done")
@@ -549,7 +545,7 @@ elif analysis == "3" or analysis == "hybrid":
                 +options["Species"]+' '\
                 +options["Kingdom"]+' '\
                 +options["Gram"]+' '\
-                +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly/'+sample+' '\
+                +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly/'+sample+'/assembly.fasta '\
                 +options["Threads"])
         else:
             print("Results already exist for "+sample+", nothing to be done")
