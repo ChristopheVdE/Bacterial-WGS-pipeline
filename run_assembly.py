@@ -37,20 +37,15 @@ if "Windows" in system:
 else:
     system="UNIX"
     print("\nUNIX based system detected ({})\n".format(system))
-#FIND SCRIPTS FOLDER LOCATION-------------------------------------------------------------------------------
-options = {}
-options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
-#GET RUN DATE-----------------------------------------------------------------------------------------------
-options["Run"] = date.today().strftime("%Y%m%d")
 #LINUX OS: GET USER ID AND GROUP ID-------------------------------------------------------------------------
-if system == "UNIX":
-    UID = subprocess.Popen('id -u', shell=True, stdout=subprocess.PIPE)
-    for line in UID.stdout:
-        UID = line.decode("utf-8")
-    GID = subprocess.Popen('id -g', shell=True, stdout=subprocess.PIPE) 
-    for line in GID.stdout:
-        GID = line.decode("utf-8")
-    options["Group"] = UID+":"+GID
+# if system == "UNIX":
+#     UID = subprocess.Popen('id -u', shell=True, stdout=subprocess.PIPE)
+#     for line in UID.stdout:
+#         UID = line.decode("utf-8")
+#     GID = subprocess.Popen('id -g', shell=True, stdout=subprocess.PIPE) 
+#     for line in GID.stdout:
+#         GID = line.decode("utf-8")
+#     options["Group"] = UID+":"+GID
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
@@ -78,6 +73,7 @@ def settings_parse(settings):
         elif "Start_genes" in line:
             options["Start_genes"] = line.replace('Start_genes=','').replace('\n','')
     options["Run"] = date.today().strftime("%Y%m%d")
+    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
     file.close()
     return options
 #PATH CORRECTION--------------------------------------------------------------------------------------------
@@ -97,7 +93,7 @@ def correct_path(dictionairy):
                     options[key+"_m"] = value.replace(i+":\\","/"+i.lower()+"//").replace('\\','/')
             #print(" - "+ key +" location ({}) changed to: {}".format(str(options[key][value]),str(options[key+"_m"][value])))
         else:
-            if key != "Threads" and key != "Run" and key != "Analysis" and key != "Group":
+            if key != "Threads" and key != "Run" and key != "Analysis" and key != "Group" and key != "Barcode_kit":
                 options[key+"_m"] = value
     return options
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
@@ -121,6 +117,7 @@ print(" - For short read assembly, input: '1' or 'short' \
 analysis = input("\nInput analysis type here: ")
 print("="*100)
 #SAVE INPUT-------------------------------------------------------------------------------------------------
+options = {}
 if analysis == "1" or "short":
     options["Analysis"] = "short"
 elif analysis == "2" or "long":
@@ -136,6 +133,8 @@ if analysis == "1" or analysis == "short":
     options["Illumina"] = input("Input location of Illumina sample files here: \n")
     options["Results"] = input("Input location to store the results here \n")
     options["Threads"] = str(input("Input number of threads here: \n"))
+    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+    options["Run"] = date.today().strftime("%Y%m%d")
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
     folders = [options["Results"]+"/Short_reads",]
     for i in folders:
@@ -223,20 +222,23 @@ elif analysis == "2" or analysis == "long":
             print("Done")
         elif question == "n":
     #REQUIRED INPUT----------------------------------------------------------------------------------------
+            settings = ''
             print("\nLONG READS"+'-'*90)
             options["MinIon_fast5"] = input("Input location of MinIon sample files (fast5-format) here: \n")   
             options["MinIon_fastq"] = input("Input location of MinIon sample files (fastq-format) here: \n") 
             print("\nRESULTS"+'-'*93)
             options["Results"] = input("Input location to store the results here \n")
+            options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+            options["Run"] = date.today().strftime("%Y%m%d")
     #OPTIONAL INPUT----------------------------------------------------------------------------------------
-            print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
+            print("\n[LONG READS ASSEMBLY] OPTIONAL SETTINGS"+"="*6)
             advanced = input("Show optional settings? (y/n): ").lower()
             if advanced == "y" or advanced =="yes":
                 options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
                 options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
                 options["Threads"] = str(input("Input number of threads here: \n"))
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
-    folders = [options["Results"]+"/Hybrid/"+options["Run"],]
+    folders = [options["Results"]+"/Long_reads/"+options["Run"],]
     for i in folders:
         os.makedirs(i, exist_ok=True)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
@@ -253,15 +255,13 @@ elif analysis == "2" or analysis == "long":
         if not "#CONVERTED PATHS" in content:
             loc.write("\n\n#CONVERTED PATHS"+'='*92)
             for key, value in options.items():
-                print(options)
                 if not key in content:
-                    print(key)
                     if key == "Illumina_m" or key == "MinIon_fast5_m" or key == "MinIon_fastq_m" or key == "Results_m" or key == "Start_genes_m":
                         loc.write('\n'+key+'='+value)
             loc.write("\n"+'='*108)          
         loc.close()
     else:
-        loc = open(options["Results"]+"/Long_Reads/"+options["Run"]+"/environment.txt", mode="w")
+        loc = open(options["Results"]+"/Long_reads/"+options["Run"]+"/environment.txt", "w")
         for key, value in options.items():
             if not key == "Threads":
                 loc.write(key+"="+value+"\n")
@@ -269,8 +269,8 @@ elif analysis == "2" or analysis == "long":
                 loc.write(key+"="+value)  
         loc.close()
 #MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
-    #shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
-    shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
+    #shutil.move(options["Cor_samples"], options["Results"]+"/Long_reads/"+options["Run"]+"/corresponding_samples.txt")
+    shutil.copy(options["Start_genes"], options["Results"]+"/Long_reads/"+options["Run"]+"/start_genes.fasta")
     #settings-file to results-folder#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
     print("\n[STARTING] Long read assembly: preparation")
     print("\nDemultiplexing Long reads")
@@ -324,17 +324,15 @@ elif analysis == "2" or analysis == "long":
     else:
         print("Results already exist, nothing to be done")
     print("[COMPLETED] Hybrid assembly preparation: Long reads")
-#HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
+#LONG READ ASSEMBLY--------------------------------------------------------------------------------------------
     print("\n[STARTING] Unicycler: hybrid assembly")
     if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"):
         os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/")
     my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/assembly.fasta")
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
-        os.system('python3 ./Scripts/Long_read/01_Unicycler.py '\
-            +options["Results"]+'/Long_reads/'+options["Run"]+'/03_Trimming '\
-            +options["Results"]+'/Long_reads/'+options["Run"]+'/04_Assembly '\
-            +options["Results"]+'/Long_reads/'+options["Run"]+'/start_genes.fasta '\
+        os.system('sh ./Scripts/Long_read/01_Unicycler.sh '\
+            +options["Results"]+'/Long_reads/'+options["Run"]+' '\
             +options["Threads"])
     else:
         print("Results already exist, nothing to be done")
@@ -371,6 +369,7 @@ elif analysis == "3" or analysis == "hybrid":
             print("Done")
         elif question == "n":
     #REQUIRED INPUT----------------------------------------------------------------------------------------
+            settings = ''
             print("\nSHORT READS"+'-'*89)
             options["Illumina"] = input("Input location of Illumina sample files here: \n")
             print("\nLONG READS"+'-'*90)
@@ -380,6 +379,8 @@ elif analysis == "3" or analysis == "hybrid":
             options["Results"] = input("Input location to store the results here \n")
             print("SAMPLE INFO")
             options["Cor_samples"] = input("Input location of text file containing info on wich Illumina samples correspond with which MinIon barcode: \n")
+            options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+            options["Run"] = date.today().strftime("%Y%m%d")
     #OPTIONAL INPUT----------------------------------------------------------------------------------------
             print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
             advanced = input("Show optional settings? (y/n): ").lower()

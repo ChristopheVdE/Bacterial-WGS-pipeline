@@ -17,22 +17,17 @@
 # The location of the folder containing Illumina reads (fastq-files)
 Illumina=
 
-# location of the csv-file containing the Illumina-sample-IDS (and corresponding long read barcodes).
-# leave the barcodes black when only using Illumina reads.
-# remove the '_L001_R1_001.fastq.gz' or '_L001_R2_001.fastq.gz' part of the sample ID's
-samples=
-
 #LONG READS-------------------------------------------------------------------------------------------------
 # These need to be provided when doing either a 'long read assembly' or a 'hybrid assembly'
 
 # The location of the folder containing the MinIon fast5-files:
-MinIon_fast5=
+MinIon_fast5=/mnt/data/tdeblock/sequencing/MinION/20190418_0938_190518_barc6NBD104LSK109/fast5
 # The location of the folder containing the MinIon fastq-files conaining reads that passed basecalling:
-MinIon_fastq=
+MinIon_fastq=/mnt/data/tdeblock/sequencing/MinION/20190418_0938_190518_barc6NBD104LSK109/fastq/pass
 
 #RESULTS----------------------------------------------------------------------------------------------------
 # The location of the folder where the results should be stored
-Results= 
+Results=/home/cvandeneynde/MinIon/test
 #===========================================================================================================
 
 #OPTIONAL SETTINGS==========================================================================================
@@ -45,9 +40,9 @@ Barcode_kit=
 
 # The ammount of threads (logical cores) that you want to use for the analysis, leave empty to let python
 # calculate an advised number.
-Threads=
+Threads=30
 
 # The location of a (multi)fasta containing sequences corresponding to the desired start-genes
 # default: use Unicyclers build in start_genes.fasta
-Start_genes=
+Start_genes=/home/cvandeneynde/Bacterial-WGS-pipeline/new/start_gene.fasta
 #===========================================================================================================
