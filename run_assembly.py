@@ -269,7 +269,6 @@ elif analysis == "2" or analysis == "long":
                 loc.write(key+"="+value)  
         loc.close()
 #MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
-    #shutil.move(options["Cor_samples"], options["Results"]+"/Long_reads/"+options["Run"]+"/corresponding_samples.txt")
     shutil.copy(options["Start_genes"], options["Results"]+"/Long_reads/"+options["Run"]+"/start_genes.fasta")
     #settings-file to results-folder#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
     print("\n[STARTING] Long read assembly: preparation")
@@ -298,7 +297,7 @@ elif analysis == "2" or analysis == "long":
             os.system("dos2unix "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
             +options["MinIon_fast5"]+' '\
-            +options["Results"]+'/Long_read/'+options["Run"]+' '\
+            +options["Results"]+'/Long_reads/'+options["Run"]+' '\
             +options["Threads"])
         print("Done")
     else:
