@@ -434,7 +434,7 @@ elif analysis == "3" or analysis == "hybrid":
                 loc.write(key+"="+value)  
         loc.close()
 #MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
-    shutil.move(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
+    shutil.copy(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
     shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
     #settings-file to results-folder
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
@@ -540,7 +540,7 @@ elif analysis == "3" or analysis == "hybrid":
     if system == "UNIX":
         os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/02_Prokka.sh")
     print("\n[STARTING] Prokka: hybrid assembly annotation")
-    for sample in os.listdir(options["Results"]+"/Hybrid/03_Assembly"):
+    for sample in os.listdir(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/"):
         my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/04_Prokka/"+sample+"/*.gff")
         if not my_file.is_file():
             os.system('sh '+options["Scripts"]+'/Hybrid/02_Prokka.sh '\
