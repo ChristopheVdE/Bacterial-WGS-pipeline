@@ -40,7 +40,7 @@ Fast5_to_seq_summary \
 pycoQC \
     --summary_file ${results}/sequencing_summary.txt \
     --barcode_file ${results}/01_Demultiplex/barcoding_summary.txt \
-    --html_outfile ${resutls}/02_QC/QC_Long_reads.html \
-    --json_outfile ${resutls}/02_QC/QC_Long_reads.json \
+    --html_outfile ${results}/02_QC/QC_Long_reads.html \
+    --json_outfile ${results}/02_QC/QC_Long_reads.json \
     2>&1 |tee -a ${results}/02_QC/pycoQC_stdin_out.txt
 #----------------------------------------------------------------------------------------------------------
