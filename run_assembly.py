@@ -231,7 +231,7 @@ elif analysis == "2" or analysis == "long":
             options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
             options["Run"] = date.today().strftime("%Y%m%d")
     #OPTIONAL INPUT----------------------------------------------------------------------------------------
-            print("\n[LONG READS ASSEMBLY] OPTIONAL SETTINGS"+"="*6)
+            print("\n[LONG READS ASSEMBLY] OPTIONAL SETTINGS"+"="*61)
             advanced = input("Show optional settings? (y/n): ").lower()
             if advanced == "y" or advanced =="yes":
                 options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
@@ -270,7 +270,7 @@ elif analysis == "2" or analysis == "long":
         loc.close()
 #MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
     shutil.copy(options["Start_genes"], options["Results"]+"/Long_reads/"+options["Run"]+"/start_genes.fasta")
-    #settings-file to results-folder#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
+    #settings-file to results-folder#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------
     print("\n[STARTING] Long read assembly: preparation")
     print("\nDemultiplexing Long reads")
     my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/barcoding_summary.txt")
@@ -324,6 +324,8 @@ elif analysis == "2" or analysis == "long":
         print("Results already exist, nothing to be done")
     print("[COMPLETED] Hybrid assembly preparation: Long reads")
 #LONG READ ASSEMBLY--------------------------------------------------------------------------------------------
+    if system == "UNIX":
+        os.system("dos2unix "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
     print("\n[STARTING] Unicycler: Long read assembly")
     for bc in os.listdir(options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/"):
         if "BC" in bc:
@@ -333,7 +335,7 @@ elif analysis == "2" or analysis == "long":
             my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc+"/assembly.fasta")
             if not my_file.is_file():
                 #file doesn't exist -> unicycle hasn't been run
-                os.system('sh ./Scripts/Long_read/01_Unicycler.sh '\
+                os.system('sh ./Scripts/Long_read/05_Unicycler.sh '\
                     +options["Results"]+'/Long_reads/'+options["Run"]+' '\
                     +bc+' '\
                     +options["Threads"])
