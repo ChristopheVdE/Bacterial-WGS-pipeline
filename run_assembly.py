@@ -326,18 +326,19 @@ elif analysis == "2" or analysis == "long":
 #LONG READ ASSEMBLY--------------------------------------------------------------------------------------------
     print("\n[STARTING] Unicycler: Long read assembly")
     for bc in os.listdir(options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/"):
-        print("Starting assembly for barcode: "+bc)
-        if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc):
-            os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc)
-        my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc+"/assembly.fasta")
-        if not my_file.is_file():
-            #file doesn't exist -> unicycle hasn't been run
-            os.system('sh ./Scripts/Long_read/01_Unicycler.sh '\
-                +options["Results"]+'/Long_reads/'+options["Run"]+' '\
-                +bc+' '\
-                +options["Threads"])
-        else:
-            print("Results already exist for barcode: "+bc+", nothing to be done")
+        if "BC" in bc:
+            print("Starting assembly for barcode: "+bc)
+            if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc):
+                os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc)
+            my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc+"/assembly.fasta")
+            if not my_file.is_file():
+                #file doesn't exist -> unicycle hasn't been run
+                os.system('sh ./Scripts/Long_read/01_Unicycler.sh '\
+                    +options["Results"]+'/Long_reads/'+options["Run"]+' '\
+                    +bc+' '\
+                    +options["Threads"])
+            else:
+                print("Results already exist for barcode: "+bc+", nothing to be done")
 #BANDAGE----------------------------------------------------------------------------------------------------
     print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
     Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
