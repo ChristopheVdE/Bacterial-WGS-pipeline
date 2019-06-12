@@ -1,3 +1,5 @@
 *.fasta
 .snakemake
 *.gfa
+*.log
+*.html
