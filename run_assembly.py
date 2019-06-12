@@ -328,10 +328,9 @@ elif analysis == "2" or analysis == "long":
         os.system("dos2unix "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
     print("\n[STARTING] Unicycler: Long read assembly")
     for bc in os.listdir(options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/"):
+        bc = bc.replace('.fastq.gz','')
         if "BC" in bc:
             print("Starting assembly for barcode: "+bc)
-            if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc):
-                os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc)
             my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc+"/assembly.fasta")
             if not my_file.is_file():
                 #file doesn't exist -> unicycle hasn't been run

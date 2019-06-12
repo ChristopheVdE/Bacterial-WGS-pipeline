@@ -11,8 +11,8 @@
 usage() {
 	errorcode=" \nERROR -> This script needs 2 parameters:\n
 		1: Path to the results folder
-                2: barcdode of sample
-                4: [OPTIONAL] Ammount of threads to use (default = 1)\n"
+		2: barcode of sample
+		3: [OPTIONAL] Ammount of threads to use (default = 1)\n"
 	echo ${errorcode};
 	exit 1;
 }
@@ -23,20 +23,19 @@ echo
 #==========================================================================================================
 
 #TAKE INPUT FROM COMMAND LINE==============================================================================
-MinIon="${1}/03_Trimming"
-Results="${1}/04_Assembly"
+MinIon="${1}/03_Trimming/${2}.fastq.gz"
+Results="${1}/04_Assembly/${2}"
 start_genes="${1}/start_genes.fasta"
-barcode=${2}
-threads=${4:-"1"}
+threads=${3:-"1"}
 #==========================================================================================================
 
 #RUN UNICYCLER=============================================================================================
 # unicycler \-1 short_reads_1.fastq.gz -2 short_reads_2.fastq.gz -l long_reads.fastq.gz -o output_dir
 unicycler \
--l "${MinIon}/${barcode}.fastq.gz "\
--o "${Results}/${barcode} "\
--t "${threads}" \
---no_correct \
---start_genes "${start_genes}" \
-2>&1 | tee -a "${Results}/${barcode}/stdin_out.txt"
+	-l "${MinIon}" \
+	-o "${Results}" \
+	-t "${threads}" \
+	--no_correct \
+	--start_genes "${start_genes}" \
+	2>&1 | tee -a "${Results}/${barcode}/stdin_out.txt"
 #==========================================================================================================
