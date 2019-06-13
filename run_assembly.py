@@ -79,7 +79,7 @@ def correct_path(dictionairy):
     global options
     options_copy = dictionairy
     options = {}
-    not_convert = ["Threads", "Run", "Analysis", "Group", "Barcode_kit", "Genus", "Species", "Kingdom", "Gram"]
+    not_convert = ["Threads", "Run", "Analysis", "Group", "Barcode_kit", "Genus", "Species", "Kingdom"]
     for key, value in options_copy.items():
         options[key] = value
         if system=="Windows":
@@ -294,7 +294,7 @@ elif analysis == "2" or analysis == "long":
         if system == "UNIX":
             os.system("dos2unix -q "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
-            +options["MinIon"]+'/fast5 '\
+            +options["MinIon"]+'/fast5/pass '\
             +options["Results"]+'/Long_reads/'+options["Run"]+' '\
             +options["Threads"])
         print("Done")
@@ -393,8 +393,6 @@ elif analysis == "3" or analysis == "hybrid":
                 options["Genus"] = input("Input the genus of your sequenced organism here: \n")
                 options["Species"] = input("Input the species of your sequenced organism here: \n")
                 options["Kingdom"] = input("Input the Kingdom of your sequenced organism here: \n")
-                if options["Kingdom"] == "Bacteria":
-                    options["Gram"] = input("Input the gram-type of your bacteria here (-/neg +/pos): \n")
         print('='*108)
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
     folders = [options["Results"]+"/Hybrid/"+options["Run"],]
@@ -487,7 +485,7 @@ elif analysis == "3" or analysis == "hybrid":
         if system == "UNIX":
             os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
-            +options["MinIon"]+'/fast5 '\
+            +options["MinIon"]+'/fast5/pass '\
             +options["Results"]+'/Hybrid/'+options["Run"]+' '\
             +options["Threads"])
         print("Done")
@@ -544,7 +542,6 @@ elif analysis == "3" or analysis == "hybrid":
                 +options["Genus"]+' '\
                 +options["Species"]+' '\
                 +options["Kingdom"]+' '\
-                +options["Gram"]+' '\
                 +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly/'+sample+'/assembly.fasta '\
                 +options["Threads"])
         else:
