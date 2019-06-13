@@ -40,7 +40,7 @@ fi
 #TRIMMOMATIC PRE-START--------------------------------------------------------------------------------------
 ADAPTERFILE='/home/adapters/NexteraPE-PE.fa';
 #Fix possible EOL errors in sampleList.txt
-dos2unix /home/Pipeline/${folder}/sampleList.txt
+dos2unix -q /home/Pipeline/${folder}/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 #RUN TRIMMOMATIC--------------------------------------------------------------------------------------------

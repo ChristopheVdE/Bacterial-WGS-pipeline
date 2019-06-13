@@ -39,7 +39,7 @@ fi
 
 #FASTQC PRE-START-------------------------------------------------------------------------------------------
 #Fix possible EOL errors in sampleList.txt
-dos2unix /home/Pipeline/${folder}/sampleList.txt
+dos2unix -q /home/Pipeline/${folder}/sampleList.txt
 echo
 #-----------------------------------------------------------------------------------------------------------
 

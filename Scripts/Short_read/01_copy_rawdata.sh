@@ -34,7 +34,7 @@ fi
 
 #FILE PREPARATION-------------------------------------------------------------------------------------------
 #Fix possible EOL errors in files to read
-dos2unix /home/Pipeline/${folder}/sampleList.txt
+dos2unix -q /home/Pipeline/${folder}/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 # copy the 00_Rawdata into the current analysis folder------------------------------------------------------

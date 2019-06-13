@@ -9,7 +9,7 @@
 
 #FILE PREPARATION-------------------------------------------------------------------------------------------
 #Fix possible EOL errors in files to read
-dos2unix /home/rawdata/Hybrid/sampleList.txt
+dos2unix -q /home/rawdata/Hybrid/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 # copy the 00_Rawdata into the current analysis folder

@@ -71,7 +71,7 @@ rule fastqc_raw:
         -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/fastqc:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
+        /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
         && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh {Run} {Threads}"'
 
 #-----------------------------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ rule multiqc_raw:
         -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/multiqc:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw.sh \
+        /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw.sh \
         && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw.sh {Run}"'
 
 #-----------------------------------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ rule Trimming:
         -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/trimmomatic:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh \
+        /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh \
         && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh {Run} {Threads}"'
 
 #-----------------------------------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ rule fastqc_trimmed:
         -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/fastqc:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh \
+        /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh \
         && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh {Run} {Threads}"'
 
 #-----------------------------------------------------------------------------------------------------------
@@ -152,6 +152,6 @@ rule multiqc_trimmed:
         -v "{Scripts_m}:/home/Scripts/" \
         -v "{Results_m}:/home/Pipeline/" \
         christophevde/multiqc:v2.2_stable \
-        /bin/bash -c "dos2unix /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim.sh \
+        /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim.sh \
         && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim.sh {Run}"'
 #===========================================================================================================

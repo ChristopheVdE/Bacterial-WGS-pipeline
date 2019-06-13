@@ -36,7 +36,7 @@ fi
 
 #MultiQC PRE-START------------------------------------------------------------------------------------------
 #Fix possible EOL errors in sampleList.txt
-dos2unix /home/Pipeline/${folder}/sampleList.txt
+dos2unix -q /home/Pipeline/${folder}/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 if ${Step} == "raw"; then

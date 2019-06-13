@@ -29,7 +29,7 @@ Threads=${2:-"1"}
 
 #FASTQC PRE-START-------------------------------------------------------------------------------------------
 #Fix possible EOL errors in sampleList.txt
-dos2unix /home/Pipeline/Hybrid/${Run}/sampleList.txt
+dos2unix -q /home/Pipeline/Hybrid/${Run}/sampleList.txt
 echo
 #-----------------------------------------------------------------------------------------------------------
 
