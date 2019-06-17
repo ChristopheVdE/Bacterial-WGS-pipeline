@@ -352,17 +352,17 @@ elif analysis == "2" or analysis == "long":
         print("skipping Bandage step")
 #PROKKA-----------------------------------------------------------------------------------------------------
     if system == "UNIX":
-        os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/02_Prokka.sh")
+        os.system("dos2unix -q "+options["Scripts"]+"/Long_read/06_Prokka.sh")
     print("\n[STARTING] Prokka: Long read assembly annotation")
     for sample in os.listdir(options["Results"]+"/Long_reads/03_Assembly/"):
         my_file = Path(options["Results"]+"/Long_reads/04_Prokka/"+sample+"/*.gff")
         if not my_file.is_file():
             os.system('sh '+options["Scripts"]+'/Long_read/06_Prokka.sh '\
-                +options["Results"]+'Long_reads/04_Prokka/'+sample+' '\
+                +options["Results"]+'/Long_reads/04_Prokka/'+sample+' '\
                 +options["Genus"]+' '\
                 +options["Species"]+' '\
                 +options["Kingdom"]+' '\
-                +options["Results"]+'Long_reads/03_Assembly/'+sample+'/assembly.fasta '\
+                +options["Results"]+'/Long_reads/03_Assembly/'+sample+'/assembly.fasta '\
                 +options["Threads"])
         else:
             print("Results already exist for "+sample+", nothing to be done")
