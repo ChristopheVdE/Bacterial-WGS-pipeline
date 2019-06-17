@@ -23,7 +23,7 @@ import sys
 
 #GENERAL====================================================================================================
 #FETCH OS-TYPE----------------------------------------------------------------------------------------------
-system = platform.system()
+system=platform.system()
 if "Windows" in system:
     system = "Windows"
     print("\nWindows based system detected ({})\n".format(system))
@@ -33,9 +33,12 @@ if "Windows" in system:
         if "Running" in line.decode("utf-8"):
             HyperV="True" 
         else: 
-            HyperV="False" 
+            HyperV="False"
+elif "Darwin" in system:
+    system = "MacOS"
+    print("\nMacOS based system detected ({})\n".format(system))
 else:
-    system="UNIX"
+    system = "UNIX"
     print("\nUNIX based system detected ({})\n".format(system))
 #LINUX OS: GET USER ID AND GROUP ID-------------------------------------------------------------------------
 # if system == "UNIX":
@@ -348,7 +351,21 @@ elif analysis == "2" or analysis == "long":
     elif Bandage == "n":
         print("skipping Bandage step")
 #PROKKA-----------------------------------------------------------------------------------------------------
-
+    if system == "UNIX":
+        os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/02_Prokka.sh")
+    print("\n[STARTING] Prokka: Long read assembly annotation")
+    for sample in os.listdir(options["Results"]+"/Long_reads/03_Assembly/"):
+        my_file = Path(options["Results"]+"/Long_reads/04_Prokka/"+sample+"/*.gff")
+        if not my_file.is_file():
+            os.system('sh '+options["Scripts"]+'/Long_read/06_Prokka.sh '\
+                +options["Results"]+'Long_reads/04_Prokka/'+sample+' '\
+                +options["Genus"]+' '\
+                +options["Species"]+' '\
+                +options["Kingdom"]+' '\
+                +options["Results"]+'Long_reads/03_Assembly/'+sample+'/assembly.fasta '\
+                +options["Threads"])
+        else:
+            print("Results already exist for "+sample+", nothing to be done")
 #===========================================================================================================
 
 #HYBRID ASSEMBLY============================================================================================
