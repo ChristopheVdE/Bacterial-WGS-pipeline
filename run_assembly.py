@@ -51,6 +51,41 @@ else:
 #     options["Group"] = UID+":"+GID
 #===========================================================================================================
 
+# GET MAX THREADS===========================================================================================
+    # For windows, the threads avaible to docker are already limited by the virtualisation program. 
+    # This means that the total ammount of threads avaiable on docker is only a portion of the threads avaiable to the host
+    # --> no extra limitation needed
+    # Linux/Mac doesn't use a virutalisation program.
+    # The number of threads available to docker should be the same as the total number of threads available on the HOST
+    # --> extra limitation is needed in order to not slow down the PC to much (reserve CPU for host)
+# TOTAL THREADS OF HOST-------------------------------------------------------------------------------------
+print("  - Fetching amount of threads on system")
+if system == "Windows":
+    host = subprocess.Popen('WMIC CPU Get NumberOfLogicalProcessors', shell=True, stdout=subprocess.PIPE)
+elif system == "MacOS":
+    host = subprocess.Popen('sysctl -n hw.ncpu', shell=True, stdout=subprocess.PIPE)
+else:
+    host = subprocess.Popen('nproc --all', shell=True, stdout=subprocess.PIPE)
+
+for line in host.stdout:
+    # linux only gives a number, Windows gives a text line + a number line
+    if any(i in line.decode("UTF-8") for i in ("0","1","2","3","4","5","6","7","8","9")):
+        h_threads = int(line.decode("UTF-8"))
+# MAX THREADS AVAILABLE IN DOCKER----------------------------------------------------------------------------
+docker = subprocess.Popen('docker run -it --rm --name ubuntu_bash christophevde/ubuntu_bash:v2.0_stable nproc --all', shell=True, stdout=subprocess.PIPE)
+for line in docker.stdout:
+    d_threads = int(line.decode("UTF-8"))
+# SUGESTED THREADS FOR ANALYSIS CALCULATION-----------------------------------------------------------------
+if system=="UNIX":
+    if h_threads < 5:
+        s_threads = h_threads//2
+    else:
+        s_threads = h_threads//4*3
+else:
+    s_threads = d_threads
+print("Done")
+#===========================================================================================================
+
 #FUNCTIONS==================================================================================================
 #SETTINGS FILE PARSING--------------------------------------------------------------------------------------
 def settings_parse(settings):
@@ -237,7 +272,17 @@ elif analysis == "2" or analysis == "long":
             if advanced == "y" or advanced =="yes":
                 options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
                 options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
-                options["Threads"] = str(input("Input number of threads here: \n"))
+        #THREADS------------------------------------------------------------------------------------------
+                print("\nTotal threads on host: {}".format(h_threads))
+                print("Max threads in Docker: {}".format(d_threads))
+                print("Suggest ammount of threads to use in the analysis: {}".format(s_threads))
+                options["Threads"] = input("\nInput the ammount of threads to use for the analysis below.\
+                \nIf you want to use the suggested ammount, just press ENTER (or type in the suggested number)\n")
+                if options["Threads"] =='':
+                    options["Threads"] = str(s_threads)
+                    print("\nChosen to use the suggested ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
+                else:
+                    print("\nManually specified the ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
     folders = [options["Results"]+"/Long_reads/"+options["Run"],]
     for i in folders:
@@ -405,8 +450,20 @@ elif analysis == "3" or analysis == "hybrid":
             if advanced == "y" or advanced =="yes":
                 options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
                 options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
-                options["Threads"] = str(input("Input number of threads here: \n"))
-                print("INFO FOR ANNOTATION"+"-"*89)
+        #THREADS------------------------------------------------------------------------------------------
+                print("THREADS"+"-"*101)
+                print("\nTotal threads on host: {}".format(h_threads))
+                print("Max threads in Docker: {}".format(d_threads))
+                print("Suggest ammount of threads to use in the analysis: {}".format(s_threads))
+                options["Threads"] = input("\nInput the ammount of threads to use for the analysis below.\
+                \nIf you want to use the suggested ammount, just press ENTER (or type in the suggested number)\n")
+                if options["Threads"] =='':
+                    options["Threads"] = str(s_threads)
+                    print("\nChosen to use the suggested ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
+                else:
+                    print("\nManually specified the ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
+        #PROKKA INFO (ANNOTATION)---------------------------------------------------------------------------
+                print("\nINFO FOR ANNOTATION"+"-"*89)
                 options["Genus"] = input("Input the genus of your sequenced organism here: \n")
                 options["Species"] = input("Input the species of your sequenced organism here: \n")
                 options["Kingdom"] = input("Input the Kingdom of your sequenced organism here: \n")
