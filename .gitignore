@@ -3,3 +3,7 @@
 *.gfa
 *.log
 *.html
+Knipsel.PNG
+multiqc_error.PNG
+stdout_err.txt
+trim_error.PNG

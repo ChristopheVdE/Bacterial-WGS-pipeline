@@ -19,6 +19,8 @@ from datetime import date
 from pathlib import Path
 import shutil
 import sys
+import glob
+from distutils.dir_util import copy_tree
 #===========================================================================================================
 
 #GENERAL====================================================================================================
@@ -574,7 +576,7 @@ elif analysis == "3" or analysis == "hybrid":
                     christophevde/fastqc:v2.2_stable \
                     /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
                     && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh '+sample+' '+options["Run"]+' '+options["Threads"]+'"')
-                if not my_file.is_file():
+                if not my_file1.is_file() and not my_file2.is_file():
                     errors.append("[ERROR] STEP 1: FastQC; quality control rawdata (short reads)")
                     error_count +=1
             else:
@@ -587,8 +589,12 @@ elif analysis == "3" or analysis == "hybrid":
         os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"temp/", exist_ok=True)
         #COPY FASTQC RESULTS---------------------------------------------------------------------------------
         for sample in ids:
-            shutil.copy(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_FastQC/", \
-                options["Results"]+"/Hybrid/"+options["Run"]+"temp/")
+            content = glob.glob(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_FastQC/*")
+            for i in content:
+                if Path(i).is_file():
+                    shutil.copy(i, options["Results"]+"/Hybrid/"+options["Run"]+"temp/")
+                else:
+                    copy_tree(i, options["Results"]+"/Hybrid/"+options["Run"]+"temp/")
         #EXECUTE MULTIQC-------------------------------------------------------------------------------------
         my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/QC-Rawdata/multiqc_report.html")
         if not my_file.is_file():
