@@ -572,7 +572,7 @@ elif analysis == "3" or analysis == "hybrid":
                     -v "'+options["Results_m"]+':/home/Pipeline/" \
                     christophevde/fastqc:v2.2_stable \
                     /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
-                    && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh "'+sample+' '+options["Run"]+' '+options["Threads"])
+                    && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh '+sample+' '+options["Run"]+' '+options["Threads"]+'"')
                 if not my_file.is_file():
                     errors.append("[ERROR] STEP 1: FastQC; quality control rawdata (short reads)")
                     error_count +=1
@@ -598,7 +598,7 @@ elif analysis == "3" or analysis == "hybrid":
                 -v "'+options["Results_m"]+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh "'+options["Run"])
+                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh '+options["Run"]+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -617,7 +617,7 @@ elif analysis == "3" or analysis == "hybrid":
                     -v "'+options["Results_m"]+':/home/Pipeline/" \
                     christophevde/multiqc:v2.2_stable \
                     /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh \
-                    && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh "'+options["Run"])
+                    && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh '+options["Run"]+'"')
                 if not my_file.is_file():
                     errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
                     error_count +=1
@@ -635,7 +635,7 @@ elif analysis == "3" or analysis == "hybrid":
                     -v "'+options["Results_m"]+':/home/Pipeline/" \
                     christophevde/trimmomatic:v2.2_stable \
                     /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh \
-                    && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh "'+sample+' '+options["Run"]+' '+options["Threads"])
+                    && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh '+sample+' '+options["Run"]+' '+options["Threads"]+'"')
                 if not my_file.is_file():
                     errors.append("[ERROR] STEP 3: TRIMMOMATIC; trimming adaptors form reads (short reads)")
                     error_count +=1
@@ -653,7 +653,7 @@ elif analysis == "3" or analysis == "hybrid":
                     -v "'+options["Results_m"]+':/home/Pipeline/" \
                     christophevde/fastqc:v2.2_stable \
                     /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh \
-                    && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh "'+sample+' '+options["Run"]+' '+options["Threads"])
+                    && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh '+sample+' '+options["Run"]+' '+options["Threads"]+'"')
                 if not my_file.is_file():
                     errors.append("[ERROR] STEP 4: FastQC; quality control trimmed data (short reads)")
                     error_count +=1
@@ -679,7 +679,7 @@ elif analysis == "3" or analysis == "hybrid":
                 -v "'+options["Results_m"]+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Trim_oneSample.sh \
-                && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_oneSample.sh "'+options["Run"])
+                && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_oneSample.sh '+options["Run"]+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 5: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -698,7 +698,7 @@ elif analysis == "3" or analysis == "hybrid":
                     -v "'+options["Results_m"]+':/home/Pipeline/" \
                     christophevde/multiqc:v2.2_stable \
                     /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Trim_oneSample.sh \
-                    && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Trim_oneSample.sh "'+options["Run"])
+                    && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Trim_oneSample.sh '+options["Run"]+'"')
                 if not my_file.is_file():
                     errors.append("[ERROR] STEP 5: MultiQC; quality control rawdata (short reads)")
                     error_count +=1
