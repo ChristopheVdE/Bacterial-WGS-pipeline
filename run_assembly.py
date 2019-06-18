@@ -22,11 +22,12 @@ import sys
 #===========================================================================================================
 
 #GENERAL====================================================================================================
+print("Please wait while the Script fetches some system info:")
 #FETCH OS-TYPE----------------------------------------------------------------------------------------------
 system=platform.system()
 if "Windows" in system:
     system = "Windows"
-    print("\nWindows based system detected ({})\n".format(system))
+    print("  - Windows based system detected ({})".format(system))
     # check if HyperV is enabled (indication of docker Version, used to give specific tips on preformance increase)
     HV = subprocess.Popen('powershell.exe get-service | findstr vmcompute', shell=True, stdout=subprocess.PIPE) 
     for line in HV.stdout:  
@@ -36,10 +37,10 @@ if "Windows" in system:
             HyperV="False"
 elif "Darwin" in system:
     system = "MacOS"
-    print("\nMacOS based system detected ({})\n".format(system))
+    print("  - MacOS based system detected ({})".format(system))
 else:
     system = "UNIX"
-    print("\nUNIX based system detected ({})\n".format(system))
+    print("  - UNIX based system detected ({})".format(system))
 #LINUX OS: GET USER ID AND GROUP ID-------------------------------------------------------------------------
 # if system == "UNIX":
 #     UID = subprocess.Popen('id -u', shell=True, stdout=subprocess.PIPE)
@@ -83,7 +84,7 @@ if system=="UNIX":
         s_threads = h_threads//4*3
 else:
     s_threads = d_threads
-print("Done")
+print("Done\n")
 #===========================================================================================================
 
 #FUNCTIONS==================================================================================================
@@ -118,21 +119,25 @@ def correct_path(dictionairy):
     options_copy = dictionairy
     options = {}
     not_convert = ["Threads", "Run", "Analysis", "Group", "Barcode_kit", "Genus", "Species", "Kingdom"]
-    for key, value in options_copy.items():
-        options[key] = value
-        if system=="Windows":
-            #print("\nConverting Windows paths for use in Docker:")
+    if system == "Windows":
+        print("\nConverting Windows paths for use in Docker:")
+        for key, value in options_copy.items():
+            options[key] = value
             for i in list(string.ascii_lowercase+string.ascii_uppercase):
                 options[key] = value
                 if value.startswith(i+":/"):
                     options[key+"_m"] = value.replace(i+":/","/"+i.lower()+"//").replace('\\','/')
                 elif value.startswith(i+":\\"):
                     options[key+"_m"] = value.replace(i+":\\","/"+i.lower()+"//").replace('\\','/')
-            #print(" - "+ key +" location ({}) changed to: {}".format(str(options[key][value]),str(options[key+"_m"][value])))
+            print(" - "+ key +" location ({}) changed to: {}".format(str(options[key]),str(options[key+"_m"])))
         else:
-            if key not in not_convert:
-                options[key+"_m"] = value
-    return options
+            print("\nUNIX paths shouldn't require a conversion for use in Docker:")
+            for key, value in options_copy.items():
+                options[key] = value
+                if not key in not_convert:
+                    options[key+"_m"] = value
+                    print(" - "+ key +" location ({}) changed to: {}".format(str(options[key]),str(options[key+"_m"])))
+        return options
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
 #SHORT READ SAMPLE LIST CREATION----------------------------------------------------------------------------
 def sample_list(Illumina):
@@ -146,13 +151,17 @@ def sample_list(Illumina):
 #===========================================================================================================
 
 #ANALYSIS TYPE==============================================================================================
+#COMMAND LINE ARGUMENTS
+try:
+    analysis = sys.argv[1]
 #INPUT------------------------------------------------------------------------------------------------------
-print("ANALYSIS TYPE"+"="*87)
-print(" - For short read assembly, input: '1' or 'short' \
-    \n - For long read assembly, input: '2' or 'long' \
-    \n - For hybrid assembly, input: '3' or 'hybrid'")
-analysis = input("\nInput analysis type here: ")
-print("="*100)
+except:
+    print("ANALYSIS TYPE"+"="*87)
+    print(" - For short read assembly, input: '1' or 'short' \
+        \n - For long read assembly, input: '2' or 'long' \
+        \n - For hybrid assembly, input: '3' or 'hybrid'")
+    analysis = input("\nInput analysis type here: ")
+    print("="*100)
 #SAVE INPUT-------------------------------------------------------------------------------------------------
 options = {}
 if analysis == "1" or "short":
@@ -624,7 +633,7 @@ elif analysis == "3" or analysis == "hybrid":
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
 else:
-    print("[ERROR] Unknown analysis type")
+    print("[ERROR] Unknown analysis type, please provide a valid analysis type.")
 #===========================================================================================================
 
 #TIMER END==================================================================================================
