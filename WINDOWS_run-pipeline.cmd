@@ -7,10 +7,42 @@ echo  - For hybrid assembly, input: '3' or 'hybrid'
 
 REM ASK ANALYSIS TYPE-----------------------------------------------
 set /p analysis="Please provide Analysis type here: " && echo.
+echo %analysis%
 REM ----------------------------------------------------------------
 
-REM START CORRECT ASSEMBLY WRAPPER----------------------------------
-python.exe run_assembly.py %analysis%
-REM ----------------------------------------------------------------
+REM SHORT READ WRAPPER----------------------------------------------
+IF  %analysis%==1 (
+    echo [SHORT] Starting Short reads assembly
+    echo.
+    python.exe run_assembly.py
+)
+IF %analysis%==short (
+    echo [SHORT] Starting Short reads assembly
+    echo.
+    python.exe run_assembly.py
+)
+REM LONG READ ASSEMBLY-----------------------------------------------
+IF  %analysis%==2 (
+    echo [LONG] Starting Long reads assembly
+    echo.
+    python.exe run_assembly.py
+)
+IF %analysis%==long (
+    echo [LONG] Starting Long reads assembly
+    echo.
+    python.exe run_assembly.py
+)
+REM ------------------------------------------------------------------
+IF  %analysis%==3 (
+    echo [HYBRID] Starting Hybrid assembly
+    echo.
+    python.exe run_assembly.py
+)
+IF %analysis%==hybrid (
+    echo [HYBRID] Starting Hybrid assembly
+    echo.
+    python.exe run_assembly.py
+)
+REM ------------------------------------------------------------------
 
 PAUSE
