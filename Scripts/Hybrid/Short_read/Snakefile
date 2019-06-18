@@ -10,7 +10,7 @@
 try:
     from datetime import date
     Run = date.today().strftime("%Y%m%d")
-    env = open("/home/Pipeline/Hybrid/"+Run+"/environment.txt","r")
+    env = open("/home/Pipeline/Hybrid/"+Run+"/settings.txt","r")
     for line in env.readlines():
         if "Results_m=" in line:
             Results_m = line.replace("Results_m=",'').replace('\n','')
