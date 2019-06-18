@@ -442,219 +442,244 @@ elif analysis == "2" or analysis == "long":
                     error_count +=1
             else:
                 print("Results already exist for "+sample+", nothing to be done")
+#ERROR DISPLAY----------------------------------------------------------------------------------------------
     if error_count > 0:
-        print("[ERROR] Assembly failed, see messages below to find out where:")
+        print("[ERROR] Assembly failed, see message(s) below to find out where:")
         for error in errors:
             print(error)
 #===========================================================================================================
 
 #HYBRID ASSEMBLY============================================================================================
 elif analysis == "3" or analysis == "hybrid":
+#ERROR COLLECTION-------------------------------------------------------------------------------------------
+    errors = []
+    error_count = 0
+    while error_count == 0:
 #GET INPUT--------------------------------------------------------------------------------------------------
-    print("\n[HYBRID ASSEMBLY] SETTINGS"+"="*74)
-    try:
-        settings = sys.argv[2]
-    except:
+        print("\n[HYBRID ASSEMBLY] SETTINGS"+"="*74)
+        try:
+            settings = sys.argv[2]
+        except:
     #ASK FOR SETTINGS FILE----------------------------------------------------------------------------------
-        question = input("Do you have a premade settings-file that you want to use? (y/n) \
-            \nPress 'n' to automatically create your own settings-file using the questions asked by this script: ").lower()
-        if question == "y":
-            settings = input("\nInput location of settings-file here: \n")
+            question = input("Do you have a premade settings-file that you want to use? (y/n) \
+                \nPress 'n' to automatically create your own settings-file using the questions asked by this script: ").lower()
+            if question == "y":
+                settings = input("\nInput location of settings-file here: \n")
         #PARSE FILE
-            print("\nParsing settings file")
-            settings_parse(settings)
-            #convert paths if needed --> function
-            #append converted paths to settings-file --> function
-            print("Done")
-        elif question == "n":
+                print("\nParsing settings file")
+                settings_parse(settings)
+                #convert paths if needed --> function
+                #append converted paths to settings-file --> function
+                print("Done")
+            elif question == "n":
     #REQUIRED INPUT----------------------------------------------------------------------------------------
-            settings = ''
-            print("\nSHORT READS"+'-'*89)
-            options["Illumina"] = input("Input location of Illumina sample files here: \n")
-            print("\nLONG READS"+'-'*90)
-            options["MinIon"] = input("Input location of MinIon sample files here: \n")    
-            print("\nRESULTS"+'-'*93)
-            options["Results"] = input("Input location to store the results here \n")
-            print("SAMPLE INFO")
-            options["Cor_samples"] = input("Input location of text file containing info on wich Illumina samples correspond with which MinIon barcode: \n")
-            options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
-            options["Run"] = date.today().strftime("%Y%m%d")
+                settings = ''
+                print("\nSHORT READS"+'-'*89)
+                options["Illumina"] = input("Input location of Illumina sample files here: \n")
+                print("\nLONG READS"+'-'*90)
+                options["MinIon"] = input("Input location of MinIon sample files here: \n")    
+                print("\nRESULTS"+'-'*93)
+                options["Results"] = input("Input location to store the results here \n")
+                print("SAMPLE INFO")
+                options["Cor_samples"] = input("Input location of text file containing info on wich Illumina samples correspond with which MinIon barcode: \n")
+                options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+                options["Run"] = date.today().strftime("%Y%m%d")
     #OPTIONAL INPUT----------------------------------------------------------------------------------------
-            print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
-            advanced = input("Show optional settings? (y/n): ").lower()
-            if advanced == "y" or advanced =="yes":
-                options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
-                options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
+                print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
+                advanced = input("Show optional settings? (y/n): ").lower()
+                if advanced == "y" or advanced =="yes":
+                    options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
+                    options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
         #THREADS------------------------------------------------------------------------------------------
-                print("THREADS"+"-"*101)
-                print("\nTotal threads on host: {}".format(h_threads))
-                print("Max threads in Docker: {}".format(d_threads))
-                print("Suggest ammount of threads to use in the analysis: {}".format(s_threads))
-                options["Threads"] = input("\nInput the ammount of threads to use for the analysis below.\
-                \nIf you want to use the suggested ammount, just press ENTER (or type in the suggested number)\n")
-                if options["Threads"] =='':
-                    options["Threads"] = str(s_threads)
-                    print("\nChosen to use the suggested ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
-                else:
-                    print("\nManually specified the ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
+                    print("THREADS"+"-"*101)
+                    print("\nTotal threads on host: {}".format(h_threads))
+                    print("Max threads in Docker: {}".format(d_threads))
+                    print("Suggest ammount of threads to use in the analysis: {}".format(s_threads))
+                    options["Threads"] = input("\nInput the ammount of threads to use for the analysis below.\
+                    \nIf you want to use the suggested ammount, just press ENTER (or type in the suggested number)\n")
+                    if options["Threads"] =='':
+                        options["Threads"] = str(s_threads)
+                        print("\nChosen to use the suggested ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
+                    else:
+                        print("\nManually specified the ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
         #PROKKA INFO (ANNOTATION)---------------------------------------------------------------------------
-                print("\nINFO FOR ANNOTATION"+"-"*89)
-                options["Genus"] = input("Input the genus of your sequenced organism here: \n")
-                options["Species"] = input("Input the species of your sequenced organism here: \n")
-                options["Kingdom"] = input("Input the Kingdom of your sequenced organism here: \n")
-        print('='*108)
+                    print("\nINFO FOR ANNOTATION"+"-"*89)
+                    options["Genus"] = input("Input the genus of your sequenced organism here: \n")
+                    options["Species"] = input("Input the species of your sequenced organism here: \n")
+                    options["Kingdom"] = input("Input the Kingdom of your sequenced organism here: \n")
+            print('='*108)
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
-    folders = [options["Results"]+"/Hybrid/"+options["Run"],]
-    for i in folders:
-        os.makedirs(i, exist_ok=True)
+        folders = [options["Results"]+"/Hybrid/"+options["Run"],]
+        for i in folders:
+            os.makedirs(i, exist_ok=True)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
-    correct_path(options)
+        correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
-    if not settings == '':
-        #read content of file (apparently read&write can't happen at the same time)
-        loc = open(settings, 'r')
-        content = loc.read()
-        #print(content)
-        loc.close()
-        #append converted paths to file
-        loc = open(settings, 'a')
-        if not "#CONVERTED PATHS" in content:
-            loc.write("\n\n#CONVERTED PATHS"+'='*92)
-            for key, value in options.items():
-                print(options)
-                if not key in content:
-                    print(key)
-                    if key == "Illumina_m" or key == "MinIon_m" or key == "Results_m" or key == "Start_genes_m":
-                        loc.write('\n'+key+'='+value)
-            loc.write("\n"+'='*108)          
-        loc.close()
-    else:
-        loc = open(options["Results"]+"/Hybrid/"+options["Run"]+"/environment.txt", mode="w")
-        for key, value in options.items():
-            if not key == "Threads":
-                loc.write(key+"="+value+"\n")
-            else:
-                loc.write(key+"="+value)  
-        loc.close()
-#MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
-    shutil.copy(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
-    shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
-    #settings-file to results-folder
-#CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
-    file = open(options["Results"]+"/Hybrid/"+options["Run"]+"/sampleList.txt",mode="w")
-    for i in sample_list(options["Illumina"]):
-        file.write(i+"\n")
-    file.close()
-#COPY ILLUMINA SAMPLES TO RESULTS---------------------------------------------------------------------------
-    print("[STARTING] Hybrid assembly preparation: Short reads")
-    copy = 'docker run -it --rm \
-        --name copy_rawdata \
-        -v "'+options["Illumina_m"]+':/home/rawdata/" \
-        -v "'+options["Results_m"]+':/home/Pipeline/" \
-        -v "'+options["Scripts_m"]+':/home/Scripts/" \
-        christophevde/ubuntu_bash:v2.2_stable \
-        /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
-        && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+options["Run"]+'"'
-    os.system(copy)
-#SHORT READS: TRIMMING & QC (DOCKER)------------------------------------------------------------------------
-    short_read = 'docker run -it --rm \
-        --name snakemake \
-        --cpuset-cpus="0" \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "'+options["Scripts_m"]+':/home/Scripts/" \
-        -v "'+options["Results_m"]+':/home/Pipeline/" \
-        christophevde/snakemake:v2.3_stable \
-        /bin/bash -c "cd /home/Scripts/Hybrid/Short_read && snakemake; \
-        dos2unix -q /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh \
-        && sh /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh '+options["Run"]+'"'
-    os.system(short_read)
-#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
-    print("\n[STARTING] Hybrid assembly preparation: Long reads")
-    print("\nDemultiplexing Long reads")
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
-    if not my_file.is_file():
-        #file doesn't exist -> guppy demultiplex hasn't been run
-        if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
-        os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
-            +options["MinIon"]+'/fastq/pass '\
-            +options["Results"]+' '\
-            +options["Run"]+' '\
-            +options["Threads"])
-        print("Done")
-    else:
-        print("Results already exist, nothing to be done")
-#LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
-    print("\nPerforming QC on Long reads")
-    if not os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/"):
-        os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/QC_Long_reads.html")
-    if not my_file.is_file():
-        #file doesn't exist -> pycoqc hasn't been run
-        if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
-        os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
-            +options["MinIon"]+'/fast5/pass '\
-            +options["Results"]+'/Hybrid/'+options["Run"]+' '\
-            +options["Threads"])
-        print("Done")
-    else:
-        print("Results already exist, nothing to be done")
-#LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
-    print("\nTrimming Long reads")
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/demultiplex_summary.txt")
-    if not my_file.is_file():
-        #file doesn't exist -> porechop trimming hasn't been run
-        if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
-        #demultiplex correct + trimming 
-        os.system('sh '+options["Scripts"]+'/Hybrid/Long_read/03_Trimming.sh '\
-            +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
-            +options["Results"]+' '\
-            +options["Run"]+' '\
-            +options["Threads"])
-        #creation of summary table of demultiplexig results (guppy and porechop)
-        os.system("python3 "+options["Scripts"]+"/Hybrid/Long_read/04_demultiplex_compare.py "\
-            +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/ "\
-            +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/ "\
-            +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
-    else:
-        print("Results already exist, nothing to be done")
-    print("[COMPLETED] Hybrid assembly preparation: Long reads")
-#HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
-    print("\n[STARTING] Unicycler: hybrid assembly")
-    os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
-        +options["Threads"])
-#BANDAGE----------------------------------------------------------------------------------------------------
-    print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
-    Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
-    if Bandage == "y":
-        Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
-        while Bandage_done != 'y':
-            Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
-    elif Bandage == "n":
-        print("skipping Bandage step")
-#PROKKA-----------------------------------------------------------------------------------------------------
-    if system == "UNIX":
-        os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/02_Prokka.sh")
-    print("\n[STARTING] Prokka: hybrid assembly annotation")
-    for sample in os.listdir(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/"):
-        my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/04_Prokka/"+sample+"/*.gff")
-        if not my_file.is_file():
-            os.system('sh '+options["Scripts"]+'/Hybrid/02_Prokka.sh '\
-                +options["Results"]+'/Hybrid/'+options["Run"]+'/04_Prokka/'+sample+' '\
-                +options["Genus"]+' '\
-                +options["Species"]+' '\
-                +options["Kingdom"]+' '\
-                +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly/'+sample+'/assembly.fasta '\
-                +options["Threads"])
+        if not settings == '':
+            #read content of file (apparently read&write can't happen at the same time)
+            loc = open(settings, 'r')
+            content = loc.read()
+            #print(content)
+            loc.close()
+            #append converted paths to file
+            loc = open(settings, 'a')
+            if not "#CONVERTED PATHS" in content:
+                loc.write("\n\n#CONVERTED PATHS"+'='*92)
+                for key, value in options.items():
+                    print(options)
+                    if not key in content:
+                        print(key)
+                        if key == "Illumina_m" or key == "MinIon_m" or key == "Results_m" or key == "Start_genes_m":
+                            loc.write('\n'+key+'='+value)
+                loc.write("\n"+'='*108)          
+            loc.close()
         else:
-            print("Results already exist for "+sample+", nothing to be done")
+            loc = open(options["Results"]+"/Hybrid/"+options["Run"]+"/environment.txt", mode="w")
+            for key, value in options.items():
+                if not key == "Threads":
+                    loc.write(key+"="+value+"\n")
+                else:
+                    loc.write(key+"="+value)  
+            loc.close()
+#MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
+        shutil.copy(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
+        shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
+        #settings-file to results-folder
+#CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
+        file = open(options["Results"]+"/Hybrid/"+options["Run"]+"/sampleList.txt",mode="w")
+        for i in sample_list(options["Illumina"]):
+            file.write(i+"\n")
+        file.close()
+#COPY ILLUMINA SAMPLES TO RESULTS---------------------------------------------------------------------------
+        print("[STARTING] Hybrid assembly preparation: Short reads")
+        copy = 'docker run -it --rm \
+            --name copy_rawdata \
+            -v "'+options["Illumina_m"]+':/home/rawdata/" \
+            -v "'+options["Results_m"]+':/home/Pipeline/" \
+            -v "'+options["Scripts_m"]+':/home/Scripts/" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
+            && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+options["Run"]+'"'
+        os.system(copy)
+#SHORT READS: TRIMMING & QC (DOCKER)------------------------------------------------------------------------
+        short_read = 'docker run -it --rm \
+            --name snakemake \
+            --cpuset-cpus="0" \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "'+options["Scripts_m"]+':/home/Scripts/" \
+            -v "'+options["Results_m"]+':/home/Pipeline/" \
+            christophevde/snakemake:v2.3_stable \
+            /bin/bash -c "cd /home/Scripts/Hybrid/Short_read && snakemake; \
+            dos2unix -q /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh \
+            && sh /home/Scripts/Hybrid/Short_read/03_copy_snakemake_log.sh '+options["Run"]+'"'
+        os.system(short_read)
+#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
+        print("\n[STARTING] Hybrid assembly preparation: Long reads")
+        print("\nDemultiplexing Long reads")
+        my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
+        if not my_file.is_file():
+            #file doesn't exist -> guppy demultiplex hasn't been run
+            if system == "UNIX":
+                os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/01_demultiplex.sh")
+            os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
+                +options["MinIon"]+'/fastq/pass '\
+                +options["Results"]+' '\
+                +options["Run"]+' '\
+                +options["Threads"])
+            print("Done")
+            if not my_file.is_file():
+                errors.append("[ERROR] STEP 6: Guppy demultiplexing failed")
+                error_count +=1
+        else:
+            print("Results already exist, nothing to be done")
+#LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
+        print("\nPerforming QC on Long reads")
+        if not os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/"):
+            os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
+        my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/QC_Long_reads.html")
+        if not my_file.is_file():
+            #file doesn't exist -> pycoqc hasn't been run
+            if system == "UNIX":
+                os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/02_pycoQC.sh") 
+            os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
+                +options["MinIon"]+'/fast5/pass '\
+                +options["Results"]+'/Hybrid/'+options["Run"]+' '\
+                +options["Threads"])
+            print("Done")
+            if not my_file.is_file():
+                errors.append("[ERROR] STEP 7: PycoQC quality control failed")
+                error_count +=1
+        else:
+            print("Results already exist, nothing to be done")
+#LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
+        print("\nTrimming Long reads")
+        my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/demultiplex_summary.txt")
+        if not my_file.is_file():
+            #file doesn't exist -> porechop trimming hasn't been run
+            if system == "UNIX":
+                os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/Long_read/03_Trimming.sh")
+            #demultiplex correct + trimming 
+            os.system('sh '+options["Scripts"]+'/Hybrid/Long_read/03_Trimming.sh '\
+                +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/01_Demultiplex '\
+                +options["Results"]+' '\
+                +options["Run"]+' '\
+                +options["Threads"])
+            #creation of summary table of demultiplexig results (guppy and porechop)
+            os.system("python3 "+options["Scripts"]+"/Hybrid/Long_read/04_demultiplex_compare.py "\
+                +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/ "\
+                +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/03_Trimming/ "\
+                +options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
+            if not my_file.is_file():
+                errors.append("[ERROR] STEP 8: Porechop demuliplex correction and trimming failed")
+                error_count +=1
+        else:
+            print("Results already exist, nothing to be done")
+        print("[COMPLETED] Hybrid assembly preparation: Long reads")
+#HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
+        print("\n[STARTING] Unicycler: hybrid assembly")
+        os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
+            +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
+            +options["Threads"])
+        # if not my_file.is_file():
+        #     errors.append("[ERROR] STEP 9: Unicycler assembly failed")
+        #     error_count +=1
+#BANDAGE----------------------------------------------------------------------------------------------------
+        print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
+        Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
+        if Bandage == "y":
+            Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+            while Bandage_done != 'y':
+                Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+        elif Bandage == "n":
+            print("skipping Bandage step")
+#PROKKA-----------------------------------------------------------------------------------------------------
+        if system == "UNIX":
+            os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/02_Prokka.sh")
+        print("\n[STARTING] Prokka: hybrid assembly annotation")
+        for sample in os.listdir(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/"):
+            my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/04_Prokka/"+sample+"/*.gff")
+            if not my_file.is_file():
+                os.system('sh '+options["Scripts"]+'/Hybrid/02_Prokka.sh '\
+                    +options["Results"]+'/Hybrid/'+options["Run"]+'/04_Prokka/'+sample+' '\
+                    +options["Genus"]+' '\
+                    +options["Species"]+' '\
+                    +options["Kingdom"]+' '\
+                    +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly/'+sample+'/assembly.fasta '\
+                    +options["Threads"])
+                if not my_file.is_file():
+                    errors.append("[ERROR] STEP 11: Prokka annotation failed")
+                    error_count +=1
+            else:
+                print("Results already exist for "+sample+", nothing to be done")
+#ERROR DISPLAY----------------------------------------------------------------------------------------------
+    if error_count > 0:
+        print("[ERROR] Assembly failed, see message(s) below to find out where:")
+        for error in errors:
+            print(error)
 #===========================================================================================================
 
 #WRONG ASSEMBLY TYPE ERROR==================================================================================
