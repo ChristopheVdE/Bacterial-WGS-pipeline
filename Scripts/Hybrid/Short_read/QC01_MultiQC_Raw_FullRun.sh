@@ -36,7 +36,7 @@ mkdir -p /home/Pipeline/Hybrid/${Run}/01_Short_reads/QC_MultiQC/QC-Rawdata
 # MultiQC FULL RUN------------------------------------------------------------------------------------------
 echo -e "\nStarting MultiQC on Full RUN\n"
 echo "----------"
-multiqc /home/Pipeline/Hybrid/${Run}/01_Short_reads/QC_MultiQC/temp \
+multiqc /home/Pipeline/Hybrid/${Run}/temp \
 -o /home/Pipeline/Hybrid/${Run}/01_Short_reads/QC_MultiQC/QC-Rawdata \
 2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/01_Short_reads/QC_MultiQC/QC-Rawdata/stdout_err.txt;
 echo "----------"
