@@ -151,7 +151,7 @@ def sample_list(Illumina):
 #===========================================================================================================
 
 #ANALYSIS TYPE==============================================================================================
-#COMMAND LINE ARGUMENTS
+#COMMAND LINE ARGUMENTS-------------------------------------------------------------------------------------
 try:
     analysis = sys.argv[1]
 #INPUT------------------------------------------------------------------------------------------------------
@@ -250,176 +250,202 @@ if analysis == "1" or analysis == "short":
 
 #LONG READ ONLY ASSEMBLY====================================================================================
 elif analysis == "2" or analysis == "long":
+#ERROR COLLECTION-------------------------------------------------------------------------------------------
+    errors = []
+    error_count = 0
+    while error_count == 0:
 #GET INPUT--------------------------------------------------------------------------------------------------
-    print("\n[LONG READ ASSEMBLY] SETTINGS"+"="*71)
-    try:
-        settings = sys.argv[2]
-    except:
+        print("\n[LONG READ ASSEMBLY] SETTINGS"+"="*71)
+        try:
+            settings = sys.argv[2]
+        except:
     #ASK FOR SETTINGS FILE----------------------------------------------------------------------------------
-        question = input("Do you have a premade settings-file that you want to use? (y/n) \
-            \nPress 'n' to automatically create your own settings-file using the questions asked by this script: ").lower()
-        if question == "y":
-            settings = input("\nInput location of settings-file here: \n")
+            question = input("Do you have a premade settings-file that you want to use? (y/n) \
+                \nPress 'n' to automatically create your own settings-file using the questions asked by this script: ").lower()
+            if question == "y":
+                settings = input("\nInput location of settings-file here: \n")
         #PARSE FILE
-            print("\nParsing settings file")
-            settings_parse(settings)
-            #convert paths if needed --> function
-            #append converted paths to settings-file --> function
-            print("Done")
-        elif question == "n":
+                print("\nParsing settings file")
+                settings_parse(settings)
+                #convert paths if needed --> function
+                #append converted paths to settings-file --> function
+                print("Done")
+            elif question == "n":
     #REQUIRED INPUT----------------------------------------------------------------------------------------
-            settings = ''
-            print("\nLONG READS"+'-'*90)
-            options["MinIon"] = input("Input location of MinIon sample files here: \n")   
-            print("\nRESULTS"+'-'*93)
-            options["Results"] = input("Input location to store the results here \n")
-            options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
-            options["Run"] = date.today().strftime("%Y%m%d")
+                settings = ''
+                print("\nLONG READS"+'-'*90)
+                options["MinIon"] = input("Input location of MinIon sample files here: \n")   
+                print("\nRESULTS"+'-'*93)
+                options["Results"] = input("Input location to store the results here \n")
+                options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+                options["Run"] = date.today().strftime("%Y%m%d")
     #OPTIONAL INPUT----------------------------------------------------------------------------------------
-            print("\n[LONG READS ASSEMBLY] OPTIONAL SETTINGS"+"="*61)
-            advanced = input("Show optional settings? (y/n): ").lower()
-            if advanced == "y" or advanced =="yes":
-                options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
-                options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
+                print("\n[LONG READS ASSEMBLY] OPTIONAL SETTINGS"+"="*61)
+                advanced = input("Show optional settings? (y/n): ").lower()
+                if advanced == "y" or advanced =="yes":
+                    options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for: \n")
+                    options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
         #THREADS------------------------------------------------------------------------------------------
-                print("\nTotal threads on host: {}".format(h_threads))
-                print("Max threads in Docker: {}".format(d_threads))
-                print("Suggest ammount of threads to use in the analysis: {}".format(s_threads))
-                options["Threads"] = input("\nInput the ammount of threads to use for the analysis below.\
-                \nIf you want to use the suggested ammount, just press ENTER (or type in the suggested number)\n")
-                if options["Threads"] =='':
-                    options["Threads"] = str(s_threads)
-                    print("\nChosen to use the suggested ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
-                else:
-                    print("\nManually specified the ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
+                    print("\nTotal threads on host: {}".format(h_threads))
+                    print("Max threads in Docker: {}".format(d_threads))
+                    print("Suggest ammount of threads to use in the analysis: {}".format(s_threads))
+                    options["Threads"] = input("\nInput the ammount of threads to use for the analysis below.\
+                    \nIf you want to use the suggested ammount, just press ENTER (or type in the suggested number)\n")
+                    if options["Threads"] =='':
+                        options["Threads"] = str(s_threads)
+                        print("\nChosen to use the suggested ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
+                    else:
+                        print("\nManually specified the ammount of threads. Reserved {} threads for Docker".format(options["Threads"]))
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
-    folders = [options["Results"]+"/Long_reads/"+options["Run"],]
-    for i in folders:
-        os.makedirs(i, exist_ok=True)
+        folders = [options["Results"]+"/Long_reads/"+options["Run"],]
+        for i in folders:
+            os.makedirs(i, exist_ok=True)
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED--------------------------------------------------------------------
-    correct_path(options)
+        correct_path(options)
 #SAVE INPUT TO FILE-----------------------------------------------------------------------------------------
-    if not settings == '':
+    #If SETTINGS FILE PROVIDED: APPEND CONVERTED PATHS------------------------------------------------------
+        if not settings == '':
         #read content of file (apparently read&write can't happen at the same time)
-        loc = open(settings, 'r')
-        content = loc.read()
+            loc = open(settings, 'r')
+            content = loc.read()
         #print(content)
-        loc.close()
+            loc.close()
         #append converted paths to file
-        loc = open(settings, 'a')
-        if not "#CONVERTED PATHS" in content:
-            loc.write("\n\n#CONVERTED PATHS"+'='*92)
-            for key, value in options.items():
-                if not key in content:
-                    if key == "Illumina_m" or key == "MinIon_m" or key == "Results_m" or key == "Start_genes_m":
-                        loc.write('\n'+key+'='+value)
-            loc.write("\n"+'='*108)          
-        loc.close()
-    else:
-        loc = open(options["Results"]+"/Long_reads/"+options["Run"]+"/environment.txt", "w")
-        for key, value in options.items():
-            if not key == "Threads":
-                loc.write(key+"="+value+"\n")
-            else:
-                loc.write(key+"="+value)  
-        loc.close()
-#MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
-    shutil.copy(options["Start_genes"], options["Results"]+"/Long_reads/"+options["Run"]+"/start_genes.fasta")
-    #settings-file to results-folder#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------
-    print("\n[STARTING] Long read assembly: preparation")
-    print("\nDemultiplexing Long reads")
-    my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/barcoding_summary.txt")
-    if not my_file.is_file():
-        #file doesn't exist -> guppy demultiplex hasn't been run
-        if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/01_demultiplex.sh")
-        os.system('sh ./Scripts/Long_read/01_demultiplex.sh '\
-            +options["MinIon"]+'/fastq/pass '\
-            +options["Results"]+' '\
-            +options["Run"]+' '\
-            +options["Threads"])
-        print("Done")
-    else:
-        print("Results already exist, nothing to be done")
-#LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
-    print("\nPerforming QC on Long reads")
-    if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/"):
-        os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/")
-    my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/QC_Long_reads.html")
-    if not my_file.is_file():
-        #file doesn't exist -> pycoqc hasn't been run
-        if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
-        os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
-            +options["MinIon"]+'/fast5/pass '\
-            +options["Results"]+'/Long_reads/'+options["Run"]+' '\
-            +options["Threads"])
-        print("Done")
-    else:
-        print("Results already exist, nothing to be done")
-#LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
-    print("\nTrimming Long reads")
-    my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/demultiplex_summary.txt")
-    if not my_file.is_file():
-        #file doesn't exist -> porechop trimming hasn't been run
-        if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/03_Trimming.sh")
-        #demultiplex correct + trimming 
-        os.system('sh '+options["Scripts"]+'/Long_read/03_Trimming.sh '\
-            +options["Results"]+'/Long_reads/'+options["Run"]+'/01_Demultiplex '\
-            +options["Results"]+' '\
-            +options["Run"]+' '\
-            +options["Threads"])
-        #creation of summary table of demultiplexig results (guppy and porechop)
-        os.system("python3 "+options["Scripts"]+"/Long_read/04_demultiplex_compare.py "\
-            +options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/ "\
-            +options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/ "\
-            +options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/")
-    else:
-        print("Results already exist, nothing to be done")
-    print("[COMPLETED] Hybrid assembly preparation: Long reads")
-#LONG READ ASSEMBLY--------------------------------------------------------------------------------------------
-    if system == "UNIX":
-        os.system("dos2unix -q "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
-    print("\n[STARTING] Unicycler: Long read assembly")
-    for bc in os.listdir(options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/"):
-        bc = bc.replace('.fastq.gz','')
-        if "BC" in bc:
-            print("Starting assembly for barcode: "+bc)
-            my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc+"/assembly.fasta")
-            if not my_file.is_file():
-                #file doesn't exist -> unicycle hasn't been run
-                os.system('sh ./Scripts/Long_read/05_Unicycler.sh '\
-                    +options["Results"]+'/Long_reads/'+options["Run"]+' '\
-                    +bc+' '\
-                    +options["Threads"])
-            else:
-                print("Results already exist for barcode: "+bc+", nothing to be done")
-#BANDAGE----------------------------------------------------------------------------------------------------
-    print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
-    Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
-    if Bandage == "y":
-        Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
-        while Bandage_done != 'y':
-            Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
-    elif Bandage == "n":
-        print("skipping Bandage step")
-#PROKKA-----------------------------------------------------------------------------------------------------
-    if system == "UNIX":
-        os.system("dos2unix -q "+options["Scripts"]+"/Long_read/06_Prokka.sh")
-    print("\n[STARTING] Prokka: Long read assembly annotation")
-    for sample in os.listdir(options["Results"]+"/Long_reads/03_Assembly/"):
-        my_file = Path(options["Results"]+"/Long_reads/04_Prokka/"+sample+"/*.gff")
-        if not my_file.is_file():
-            os.system('sh '+options["Scripts"]+'/Long_read/06_Prokka.sh '\
-                +options["Results"]+'/Long_reads/04_Prokka/'+sample+' '\
-                +options["Genus"]+' '\
-                +options["Species"]+' '\
-                +options["Kingdom"]+' '\
-                +options["Results"]+'/Long_reads/03_Assembly/'+sample+'/assembly.fasta '\
-                +options["Threads"])
+            loc = open(settings, 'a')
+            if not "#CONVERTED PATHS" in content:
+                loc.write("\n\n#CONVERTED PATHS"+'='*92)
+                for key, value in options.items():
+                    if not key in content:
+                        if key == "Illumina_m" or key == "MinIon_m" or key == "Results_m" or key == "Start_genes_m":
+                            loc.write('\n'+key+'='+value)
+                loc.write("\n"+'='*108)          
+            loc.close()
+    #IF NO SETTINGS FILE PROVIDED: WRITE ALL TO FILE---------------------------------------------------------
         else:
-            print("Results already exist for "+sample+", nothing to be done")
+            loc = open(options["Results"]+"/Long_reads/"+options["Run"]+"/environment.txt", "w")
+            for key, value in options.items():
+                if not key == "Threads":
+                    loc.write(key+"="+value+"\n")
+                else:
+                    loc.write(key+"="+value)  
+            loc.close()
+#MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
+        shutil.copy(options["Start_genes"], options["Results"]+"/Long_reads/"+options["Run"]+"/start_genes.fasta")
+        #settings-file to results-folder
+#LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
+        print("\n[STARTING] Long read assembly: preparation")
+        print("\nDemultiplexing Long reads")
+        my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/barcoding_summary.txt")
+        if not my_file.is_file():
+            #file doesn't exist -> guppy demultiplex hasn't been run
+            if system == "UNIX":
+                os.system("dos2unix -q "+options["Scripts"]+"/Long_read/01_demultiplex.sh")
+            os.system('sh ./Scripts/Long_read/01_demultiplex.sh '\
+                +options["MinIon"]+'/fastq/pass '\
+                +options["Results"]+' '\
+                +options["Run"]+' '\
+                +options["Threads"])
+            print("Done")
+            if not my_file.is_file():
+                errors.append("[ERROR] STEP 1: Guppy demultiplexing failed")
+                error_count +=1
+        else:
+            print("Results already exist, nothing to be done")
+#LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
+        print("\nPerforming QC on Long reads")
+        if not os.path.exists(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/"):
+            os.makedirs(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/")
+        my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/QC_Long_reads.html")
+        if not my_file.is_file():
+            #file doesn't exist -> pycoqc hasn't been run
+            if system == "UNIX":
+                os.system("dos2unix -q "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
+            os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
+                +options["MinIon"]+'/fast5/pass '\
+                +options["Results"]+'/Long_reads/'+options["Run"]+' '\
+                +options["Threads"])
+            print("Done")
+            if not my_file.is_file():
+                errors.append("[ERROR] STEP 2: PycoQC quality control failed")
+                error_count +=1
+        else:
+            print("Results already exist, nothing to be done")
+#LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
+        print("\nTrimming Long reads")
+        my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/demultiplex_summary.txt")
+        if not my_file.is_file():
+            #file doesn't exist -> porechop trimming hasn't been run
+            if system == "UNIX":
+                os.system("dos2unix -q "+options["Scripts"]+"/Long_read/03_Trimming.sh")
+            #demultiplex correct + trimming 
+            os.system('sh '+options["Scripts"]+'/Long_read/03_Trimming.sh '\
+                +options["Results"]+'/Long_reads/'+options["Run"]+'/01_Demultiplex '\
+                +options["Results"]+' '\
+                +options["Run"]+' '\
+                +options["Threads"])
+            #creation of summary table of demultiplexig results (guppy and porechop)
+            os.system("python3 "+options["Scripts"]+"/Long_read/04_demultiplex_compare.py "\
+                +options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/ "\
+                +options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/ "\
+                +options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/")
+            if not my_file.is_file():
+                errors.append("[ERROR] STEP 3: Porechop demuliplex correction and trimming failed")
+                error_count +=1
+        else:
+            print("Results already exist, nothing to be done")
+        print("[COMPLETED] Hybrid assembly preparation: Long reads")
+#LONG READ ASSEMBLY--------------------------------------------------------------------------------------------
+        if system == "UNIX":
+            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
+        print("\n[STARTING] Unicycler: Long read assembly")
+        for bc in os.listdir(options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/"):
+            bc = bc.replace('.fastq.gz','')
+            if "BC" in bc:
+                print("Starting assembly for barcode: "+bc)
+                my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc+"/assembly.fasta")
+                if not my_file.is_file():
+                    #file doesn't exist -> unicycle hasn't been run
+                    os.system('sh ./Scripts/Long_read/05_Unicycler.sh '\
+                        +options["Results"]+'/Long_reads/'+options["Run"]+' '\
+                        +bc+' '\
+                        +options["Threads"])
+                    if not my_file.is_file():
+                        errors.append("[ERROR] STEP 4: Unicycler assembly failed")
+                        error_count +=1
+                else:
+                    print("Results already exist for barcode: "+bc+", nothing to be done")
+#BANDAGE----------------------------------------------------------------------------------------------------
+        print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
+        Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
+        if Bandage == "y":
+            Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+            while Bandage_done != 'y':
+                Bandage_done = input("[WAITING] If you're done with Bandage input 'y' to continue: ").lower()
+        elif Bandage == "n":
+            print("skipping Bandage step")
+#PROKKA-----------------------------------------------------------------------------------------------------
+        if system == "UNIX":
+            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/06_Prokka.sh")
+        print("\n[STARTING] Prokka: Long read assembly annotation")
+        for sample in os.listdir(options["Results"]+"/Long_reads/03_Assembly/"):
+            my_file = Path(options["Results"]+"/Long_reads/04_Prokka/"+sample+"/*.gff")
+            if not my_file.is_file():
+                os.system('sh '+options["Scripts"]+'/Long_read/06_Prokka.sh '\
+                    +options["Results"]+'/Long_reads/04_Prokka/'+sample+' '\
+                    +options["Genus"]+' '\
+                    +options["Species"]+' '\
+                    +options["Kingdom"]+' '\
+                    +options["Results"]+'/Long_reads/03_Assembly/'+sample+'/assembly.fasta '\
+                    +options["Threads"])
+                if not my_file.is_file():
+                    errors.append("[ERROR] STEP 6: Prokka annotation failed")
+                    error_count +=1
+            else:
+                print("Results already exist for "+sample+", nothing to be done")
+    if error_count > 0:
+        print("[ERROR] Assembly failed, see messages below to find out where:")
+        for error in errors:
+            print(error)
 #===========================================================================================================
 
 #HYBRID ASSEMBLY============================================================================================
