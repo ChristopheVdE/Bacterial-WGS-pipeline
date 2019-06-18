@@ -35,7 +35,7 @@ file.close()
 #==========================================================================================================
 
 #RUN UNICYCLER=============================================================================================
-# unicycler \-1 short_reads_1.fastq.gz -2 short_reads_2.fastq.gz -l long_reads.fastq.gz -o output_dir
+# unicycler -1 short_reads_1.fastq.gz -2 short_reads_2.fastq.gz -l long_reads.fastq.gz -o output_dir
 for key, value in samples.items():
     my_file = Path(Results+'/'+value+"/assembly.fasta")
     if not my_file.is_file():
