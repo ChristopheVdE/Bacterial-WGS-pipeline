@@ -130,13 +130,13 @@ def correct_path(dictionairy):
                 elif value.startswith(i+":\\"):
                     options[key+"_m"] = value.replace(i+":\\","/"+i.lower()+"//").replace('\\','/')
             print(" - "+ key +" location ({}) changed to: {}".format(str(options[key]),str(options[key+"_m"])))
-        else:
-            print("\nUNIX paths shouldn't require a conversion for use in Docker:")
-            for key, value in options_copy.items():
-                options[key] = value
-                if not key in not_convert:
-                    options[key+"_m"] = value
-                    print(" - "+ key +" location ({}) changed to: {}".format(str(options[key]),str(options[key+"_m"])))
+    else:
+        print("\nUNIX paths shouldn't require a conversion for use in Docker:")
+        for key, value in options_copy.items():
+            options[key] = value
+            if not key in not_convert:
+                options[key+"_m"] = value
+                print(" - "+ key +" location ({}) changed to: {}".format(str(options[key]),str(options[key+"_m"])))
         return options
 #SAVING INPUT TO FILE---------------------------------------------------------------------------------------
 #SHORT READ SAMPLE LIST CREATION----------------------------------------------------------------------------
