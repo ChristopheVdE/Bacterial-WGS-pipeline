@@ -158,7 +158,7 @@ try:
     elif Path(sys.argv[1]).is_dir():
         options["Illumina"] = sys.argv[1]
         options["Results"] = sys.argv[2]+"/Short_reads"
-        options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+        options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts/Short_read"
         options["Run"] = date.today().strftime("%Y%m%d")
         try:
             options["Threads"] = sys.argv[3]
@@ -185,7 +185,7 @@ except:
     options["Results"] = input("Input the full path/location of the folder where you want to save the analysis result:\n")+"/Short_reads"
     options["Adaptors"] = input("Input the full path/location of the multifasta containing the adapter-sequences to trim. \
         \nPress ENTER to use the build in adapter file for trimming.\n")
-    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts/Short_read"
 #CHECK FOR ADAPTER INPUT, USE DEFAULT IF NOT PROVIDED--------------------------------------------------------
     if options["Adaptors"] == '':
         options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
@@ -272,7 +272,7 @@ if options["Illumina"] == options["Results"]:
     move = 'docker run -it --rm \
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
-        -v "'+options["Scripts_m"]+'/Short_read/:/home/Scripts/" \
+        -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/ubuntu_bash:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/01_move_rawdata.sh \
         && chmod 755 /home/Scripts/01_move_rawdata.sh \
@@ -284,7 +284,7 @@ else:
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
         -v "'+options["Results_m"]+':/home/Pipeline/" \
-        -v "'+options["Scripts_m"]+'/Short_read/:/home/Scripts/" \
+        -v "'+options["Scripts_m"]+':/home/Scripts/" \
         christophevde/ubuntu_bash:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/01_copy_rawdata.sh \
         chmod 755 /home/Scripts/01_copy_rawdata.sh \
@@ -298,8 +298,8 @@ snake = 'docker run -it --rm \
     --cpuset-cpus="0" \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v "'+options["Results_m"]+':/home/Pipeline/" \
-    -v "'+options["Scripts_m"]+'/Short_read/Snakefile:/home/Snakemake/Snakefile" \
-    -v "'+options["Scripts_m"]+'/Short_read/copy_log.sh:/home/Scripts/copy_log.sh" \
+    -v "'+options["Scripts_m"]+'/Snakefile:/home/Snakemake/Snakefile" \
+    -v "'+options["Scripts_m"]+'/copy_log.sh:/home/Scripts/copy_log.sh" \
     christophevde/snakemake:v2.3_stable \
     /bin/bash -c "cd /home/Snakemake/ && snakemake; \
     dos2unix -q /home/Scripts/copy_log.sh && chmod 755 /home/Scripts/copy_log.sh && /home/Scripts/copy_log.sh"'
