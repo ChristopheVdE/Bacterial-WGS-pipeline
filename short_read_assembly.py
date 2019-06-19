@@ -67,7 +67,7 @@ def settings_parse(settings):
         elif "MinIon=" in line:
             options["MinIon"] = line.replace('MinIon=','').replace('\n','')
         elif "Results=" in line:
-            options["Results"] = line.replace('Results=','').replace('\n','')
+            options["Results"] = line.replace('Results=','').replace('\n','')+"/Short_reads"
         elif "Adaptors=" in line:
             options["Adaptors"] = line.replace('Adaptors=','').replace('\n','')
         elif "Barcode_kit=" in line:
@@ -157,7 +157,7 @@ try:
         settings_parse(sys.argv[1])
     elif Path(sys.argv[1]).is_dir():
         options["Illumina"] = sys.argv[1]
-        options["Results"] = sys.argv[2]
+        options["Results"] = sys.argv[2]+"/Short_reads"
         options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Docker"
         options["Run"] = date.today().strftime("%Y%m%d")
         try:
@@ -169,7 +169,7 @@ try:
             options["Adapters"] = sys.argv[4]
         except:
             print("Adaptors not specified, using build in adaptor file for trimming")
-            options["Adaptors"] = options["Scripts"]+'/04-Trimmomatic/NexteraPE-PE.fa'
+            options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
 #SHOW TIPS--------------------------------------------------------------------------------------------------
 except:
     if system == "Windows":
@@ -182,13 +182,13 @@ except:
         drive_acces(system, HyperV)
     print("Before submitting the locations, please check wheter upper and lower case letters are correct")
     options["Illumina"] = input("Input the full path/location of the folder with the raw-data to be analysed:\n")
-    options["Results"] = input("Input the full path/location of the folder where you want to save the analysis result:\n")
+    options["Results"] = input("Input the full path/location of the folder where you want to save the analysis result:\n")+"/Short_reads"
     options["Adaptors"] = input("Input the full path/location of the multifasta containing the adapter-sequences to trim. \
         \nPress ENTER to use the build in adapter file for trimming.\n")
     options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Docker"
 #CHECK FOR ADAPTER INPUT, USE DEFAULT IF NOT PROVIDED--------------------------------------------------------
     if options["Adaptors"] == '':
-        options["Adaptors"] = options["Scripts"]+'/04-Trimmomatic/NexteraPE-PE.fa'
+        options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
 #THREADS-----------------------------------------------------------------------------------------------------
 # give advanced users the option to overrule the automatic thread detection and specify the ammount themself
 # basic users can just press ENTER to accept the automatically sugested ammount of threads
@@ -272,7 +272,7 @@ if options["Illumina"] == options["Results"]:
     move = 'docker run -it --rm \
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
-        -v "'+options["Scripts_m"]+'/01-Bash:/home/Scripts/" \
+        -v "'+options["Scripts_m"]+'/Short_read/:/home/Scripts/" \
         christophevde/ubuntu_bash:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/01_move_rawdata.sh \
         && chmod 755 /home/Scripts/01_move_rawdata.sh \
@@ -284,7 +284,7 @@ else:
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
         -v "'+options["Results_m"]+':/home/Pipeline/" \
-        -v "'+options["Scripts_m"]+'/01-Bash:/home/Scripts/" \
+        -v "'+options["Scripts_m"]+'/Short_read/:/home/Scripts/" \
         christophevde/ubuntu_bash:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/01_copy_rawdata.sh \
         chmod 755 /home/Scripts/01_copy_rawdata.sh \
@@ -298,8 +298,8 @@ snake = 'docker run -it --rm \
     --cpuset-cpus="0" \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v "'+options["Results_m"]+':/home/Pipeline/" \
-    -v "'+options["Scripts_m"]+'/00-Snakemake/Snakefile:/home/Snakemake/Snakefile" \
-    -v "'+options["Scripts_m"]+'/00-Snakemake/copy_log.sh:/home/Scripts/copy_log.sh" \
+    -v "'+options["Scripts_m"]+'/Short_read/Snakefile:/home/Snakemake/Snakefile" \
+    -v "'+options["Scripts_m"]+'/Short_read/copy_log.sh:/home/Scripts/copy_log.sh" \
     christophevde/snakemake:v2.3_stable \
     /bin/bash -c "cd /home/Snakemake/ && snakemake; \
     dos2unix -q /home/Scripts/copy_log.sh && chmod 755 /home/Scripts/copy_log.sh && /home/Scripts/copy_log.sh"'

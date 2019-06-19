@@ -1,0 +1,188 @@
+############################################################################################################
+#NAME:  SNAKEMAKE
+#AUTHOR: Christophe Van den Eynde
+#RUNNING: Salmonella t. pipeline for Illumina reads
+#USAGE: $snakemake
+############################################################################################################
+
+#SNAKEMAKE RUN PREPARATION==================================================================================
+import os
+# GET INFO FROM HOST----------------------------------------------------------------------------------------
+env = open("/home/Pipeline/environment.txt","r")
+for line in env.readlines():
+    # GET LOCATIONS-----------------------------------------------------------------------------------------
+    if "Results_m=" in line:
+        Results_m = line.replace("Results_m=",'').replace('\n','')
+    elif "Illumina_m" in line:
+        Illumina_m = line.replace("Illumina_m=",'').replace('\n','')
+    elif "Scripts_m=" in line:
+        Scripts_m = line.replace("Scripts_m=",'').replace('\n','')
+    elif "Adaptors_m=" in line:
+        Adaptors_m = line.replace("Adaptors_m=",'').replace('\n','')
+        Adaptors = os.path.basename(Adaptors_m)
+        Adaptors_m = Adaptors_m.replace(Adaptors,'')
+    elif "Threads=" in line:
+        Threads = line.replace("Threads=",'').replace('\n','')
+    elif "Run=" in line:
+        Run = line.replace("Run=",'').replace('\n','')
+env.close()
+#-----------------------------------------------------------------------------------------------------------
+
+#GET SAMPLE IDS---------------------------------------------------------------------------------------------
+ids = []
+samples = open("/home/Pipeline/sampleList.txt","r")
+for line in samples.readlines():
+    ids.append(line.replace('\n',''))
+samples.close()
+#-----------------------------------------------------------------------------------------------------------
+#===========================================================================================================
+
+#SNAKEMAKE RUN==============================================================================================
+#-----------------------------------------------------------------------------------------------------------
+# Master rule, controls all other rule executions
+
+rule all:                                                                       
+    input:
+        expand("/home/Pipeline/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids),                            
+        expand("/home/Pipeline/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",id=ids),                       
+        expand("/home/Pipeline/{id}/04_SPAdes/dataset.info",id=ids)                                             
+    message:
+        "Analysis done, results can be found in {Results_m}"
+
+#-----------------------------------------------------------------------------------------------------------
+# Pipeline step1: copy/move files from raw data folder to 'Sample_id/00_Rawdata/' in the analysis-results folder
+# executed in get_environment.py
+
+#-----------------------------------------------------------------------------------------------------------
+# Pipeline step2: running fastqc on the raw-data in the current-analysis folder
+
+rule fastqc_raw:
+    input:
+        expand("/home/Pipeline/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",id=ids),  #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",id=ids)   #the rawdata (output copy_rawdata rule)
+    output:
+        expand("/home/Pipeline/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",id=ids),
+        expand("/home/Pipeline/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",id=ids)
+    message:
+        "Analyzing raw-data with FastQC using Docker-container fastqc:v2.2_stable"
+    shell:
+        'docker run -it --rm \
+        --name fastqc_raw \
+        -v "{Results_m}:/home/Pipeline/" \
+        -v "{Scripts_m}/02-FastQC:/home/Scripts/" \
+        christophevde/fastqc:v2.2_stable \
+        /bin/bash -c "dos2unix -q /home/Scripts/QC01_fastqcRawData.sh \
+        && chmod 755 /home/Scripts/QC01_fastqcRawData.sh \
+        && /home/Scripts/QC01_fastqcRawData.sh {Threads}"'
+
+#-----------------------------------------------------------------------------------------------------------
+# Pipeline step3: running multiqc on the raw-data in the current-analysis folder
+
+rule multiqc_raw:
+    input:
+        expand("/home/Pipeline/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R1_001_fastqc.html",id=ids),    #output fastqc rawdata
+        expand("/home/Pipeline/{id}/01_QC-Rawdata/QC_FastQC/{id}_L001_R2_001_fastqc.html",id=ids)     #output fastqc rawdata
+    output:
+        expand("/home/Pipeline/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids)             #Results MultiQC for each sample separately
+    message:
+        "Analyzing raw-data with MultiQC using Docker-container multiqc:v2.2_stable"
+    shell:
+        'docker run -it --rm \
+        --name multiqc_raw \
+        -v "{Results_m}:/home/Pipeline/" \
+        -v "{Scripts_m}/03-MultiQC:/home/Scripts/" \
+        christophevde/multiqc:v2.2_stable \
+        /bin/bash -c "dos2unix -q /home/Scripts/QC01_multiqc_raw.sh \
+        && chmod 755 /home/Scripts/QC01_multiqc_raw.sh \
+        && /home/Scripts/QC01_multiqc_raw.sh {Run}"'
+
+#-----------------------------------------------------------------------------------------------------------
+# Pipeline step4: Trimming
+
+rule Trimming:
+    input:
+        expand("/home/Pipeline/{id}/00_Rawdata/{id}_L001_R1_001.fastq.gz",id=ids),          #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/{id}/00_Rawdata/{id}_L001_R2_001.fastq.gz",id=ids),          #the rawdata (output copy_rawdata rule)
+        expand("/home/Pipeline/{id}/01_QC-Rawdata/QC_MultiQC/multiqc_report.html",id=ids)   #output multiqc raw (required so that the tasks don't run simultaniously and their outpur gets mixed in the terminal)
+    output:
+        expand("/home/Pipeline/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",id=ids),
+        expand("/home/Pipeline/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",id=ids)
+    message:
+        "Trimming raw-data with Trimmomatic v0.39 using Docker-container trimmomatic:v2.2_stable"
+    shell:
+        'docker run -it --rm \
+        --name trimmomatic \
+        -v "{Results_m}:/home/Pipeline/" \
+        -v "{Adaptors_m}:/home/adapters/" \
+        -v "{Scripts_m}/04-Trimmomatic:/home/Scripts/" \
+        christophevde/trimmomatic:v2.2_stable \
+        /bin/bash -c "dos2unix -q /home/Scripts/02_runTrimmomatic.sh \
+        && chmod 755 /home/Scripts/02_runTrimmomatic.sh \
+        && /home/Scripts/02_runTrimmomatic.sh {Threads} {Adaptors}"'
+
+#-----------------------------------------------------------------------------------------------------------
+# Pipeline step5: FastQC trimmed data (paired reads only)
+
+rule fastqc_trimmed:
+    input:
+        expand("/home/Pipeline/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",id=ids), #output trimmomatic
+        expand("/home/Pipeline/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",id=ids)  #output trimmomatic
+    output:
+        expand("/home/Pipeline/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",id=ids)
+    message:
+        "Analyzing trimmed-data with FastQC using Docker-container fastqc:v2.2_stable"
+    shell:
+        'docker run -it --rm \
+        --name fastqc_trim \
+        -v "{Results_m}:/home/Pipeline/" \
+        -v "{Scripts_m}/02-FastQC:/home/Scripts/" \
+        christophevde/fastqc:v2.2_stable \
+        /bin/bash -c "dos2unix -q /home/Scripts/QC02_fastqcTrimmomatic.sh \
+        && chmod 755 /home/Scripts/QC02_fastqcTrimmomatic.sh \
+        && /home/Scripts/QC02_fastqcTrimmomatic.sh {Threads}"'
+
+#-----------------------------------------------------------------------------------------------------------
+# Pipeline step6: MultiQC trimmed data (paired reads only) 
+
+rule multiqc_trimmed:
+    input:
+        expand("/home/Pipeline/{id}/03_QC-Trimmomatic_Paired/QC_FastQC/{id}_L001_R1_001_P_fastqc.html",id=ids)      #output fastqc trimmed data
+    output:
+        expand("/home/Pipeline/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",id=ids)
+    message:
+        "Analyzing trimmed-data with MultiQC using Docker-container multiqc:v2.2_stable"
+    shell:
+        'docker run -it --rm \
+        --name multiqc_trim \
+        -v "{Results_m}:/home/Pipeline/" \
+        -v "{Scripts_m}/03-MultiQC:/home/Scripts/" \
+        christophevde/multiqc:v2.2_stable \
+        /bin/bash -c "dos2unix -q /home/Scripts/QC02_multiqcTrimmomatic.sh \
+        && chmod 755 /home/Scripts/QC02_multiqcTrimmomatic.sh \
+        && /home/Scripts/QC02_multiqcTrimmomatic.sh {Run}"'
+
+#-----------------------------------------------------------------------------------------------------------
+# Pipeline step7: SPAdes
+
+rule Spades_InputPathogenwatch:
+    input:
+        expand("/home/Pipeline/{id}/02_Trimmomatic/{id}_L001_R1_001_P.fastq.gz",id=ids),                # output trimming
+        expand("/home/Pipeline/{id}/02_Trimmomatic/{id}_L001_R2_001_U.fastq.gz",id=ids),                # output trimming
+        expand("/home/Pipeline/{id}/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html",id=ids)    # output multiqc-trimmed
+    output:
+        expand("/home/Pipeline/{id}/04_SPAdes/dataset.info",id=ids),
+        directory(expand("/home/Pipeline/{id}/05_inputPathogenWatch",id=ids))
+    message:
+        "assembling genome from trimmed-data with SPAdes v3.13.1 using Docker-container SPAdes:v2.2_stable"
+    shell:
+        'docker run -it --rm \
+        --name spades \
+        -v "{Results_m}:/home/Pipeline/" \
+        -v "{Scripts_m}/05-Spades:/home/Scripts/" \
+        christophevde/spades:v2.2_stable \
+        /bin/bash -c "dos2unix -q /home/Scripts/03_spades.sh \
+        && chmod 755 /home/Scripts/03_spades.sh \
+        && /home/Scripts/03_spades.sh {Threads}"'
+
+#-----------------------------------------------------------------------------------------------------------
+#===========================================================================================================
