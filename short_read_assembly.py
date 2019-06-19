@@ -158,7 +158,7 @@ try:
     elif Path(sys.argv[1]).is_dir():
         options["Illumina"] = sys.argv[1]
         options["Results"] = sys.argv[2]+"/Short_reads"
-        options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
+        options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
         options["Run"] = date.today().strftime("%Y%m%d")
         try:
             options["Threads"] = sys.argv[3]
@@ -185,7 +185,7 @@ except:
     options["Results"] = input("Input the full path/location of the folder where you want to save the analysis result:\n")+"/Short_reads"
     options["Adaptors"] = input("Input the full path/location of the multifasta containing the adapter-sequences to trim. \
         \nPress ENTER to use the build in adapter file for trimming.\n")
-    options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
+    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
 #CHECK FOR ADAPTER INPUT, USE DEFAULT IF NOT PROVIDED--------------------------------------------------------
     if options["Adaptors"] == '':
         options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
