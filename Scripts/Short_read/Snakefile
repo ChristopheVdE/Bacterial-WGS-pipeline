@@ -69,7 +69,7 @@ rule fastqc_raw:
         'docker run -it --rm \
         --name fastqc_raw \
         -v "{Results_m}:/home/Pipeline/" \
-        -v "{Scripts_m}/02-FastQC:/home/Scripts/" \
+        -v "{Scripts_m}:/home/Scripts/" \
         christophevde/fastqc:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/QC01_fastqcRawData.sh \
         && chmod 755 /home/Scripts/QC01_fastqcRawData.sh \
@@ -90,7 +90,7 @@ rule multiqc_raw:
         'docker run -it --rm \
         --name multiqc_raw \
         -v "{Results_m}:/home/Pipeline/" \
-        -v "{Scripts_m}/03-MultiQC:/home/Scripts/" \
+        -v "{Scripts_m}:/home/Scripts/" \
         christophevde/multiqc:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/QC01_multiqc_raw.sh \
         && chmod 755 /home/Scripts/QC01_multiqc_raw.sh \
@@ -114,7 +114,7 @@ rule Trimming:
         --name trimmomatic \
         -v "{Results_m}:/home/Pipeline/" \
         -v "{Adaptors_m}:/home/adapters/" \
-        -v "{Scripts_m}/04-Trimmomatic:/home/Scripts/" \
+        -v "{Scripts_m}:/home/Scripts/" \
         christophevde/trimmomatic:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/02_runTrimmomatic.sh \
         && chmod 755 /home/Scripts/02_runTrimmomatic.sh \
@@ -135,7 +135,7 @@ rule fastqc_trimmed:
         'docker run -it --rm \
         --name fastqc_trim \
         -v "{Results_m}:/home/Pipeline/" \
-        -v "{Scripts_m}/02-FastQC:/home/Scripts/" \
+        -v "{Scripts_m}:/home/Scripts/" \
         christophevde/fastqc:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/QC02_fastqcTrimmomatic.sh \
         && chmod 755 /home/Scripts/QC02_fastqcTrimmomatic.sh \
@@ -155,7 +155,7 @@ rule multiqc_trimmed:
         'docker run -it --rm \
         --name multiqc_trim \
         -v "{Results_m}:/home/Pipeline/" \
-        -v "{Scripts_m}/03-MultiQC:/home/Scripts/" \
+        -v "{Scripts_m}:/home/Scripts/" \
         christophevde/multiqc:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/QC02_multiqcTrimmomatic.sh \
         && chmod 755 /home/Scripts/QC02_multiqcTrimmomatic.sh \
@@ -178,7 +178,7 @@ rule Spades_InputPathogenwatch:
         'docker run -it --rm \
         --name spades \
         -v "{Results_m}:/home/Pipeline/" \
-        -v "{Scripts_m}/05-Spades:/home/Scripts/" \
+        -v "{Scripts_m}:/home/Scripts/" \
         christophevde/spades:v2.2_stable \
         /bin/bash -c "dos2unix -q /home/Scripts/03_spades.sh \
         && chmod 755 /home/Scripts/03_spades.sh \
