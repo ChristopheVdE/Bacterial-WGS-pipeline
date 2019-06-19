@@ -385,7 +385,7 @@ while error_count == 0:
             os.system('docker run -it --rm \
                 --name copy_fastqc\
                 -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads/'+sample+'/03_QC-Trimmomatic_Paired/QC_FastQC/:/home/fastqc" \
-                -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads/QC_MultiQC/temp/:/home/multiqc" \
+                -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/temp/:/home/multiqc" \
                 christophevde/ubuntu_bash:v2.2_stable \
                 /bin/bash -c "cp -rn /home/fastqc/* /home/multiqc"')
         #EXECUTE MULTIQC-------------------------------------------------------------------------------------
