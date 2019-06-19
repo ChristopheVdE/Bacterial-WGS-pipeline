@@ -289,6 +289,7 @@ while error_count == 0:
         #CREATE TEMP FOLDER----------------------------------------------------------------------------------
     os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/temp/", exist_ok=True)
         #COPY FASTQC RESULTS---------------------------------------------------------------------------------
+    print("creating temporary directory to copy all fastqc results of rawdata")
     for sample in ids:
         os.system('docker run -it --rm\
             --name copy_fastqc\
@@ -310,14 +311,14 @@ while error_count == 0:
             errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
             error_count +=1
     else:
-        print("  - MultiQC results for the rawdata of sample "+sample+" already exists")
+        print("  - MultiQC results for the full run (rawdata) already exists")
         #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
     if os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/") and os.path.isdir(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/"):
         os.system('docker run -it --rm\
             --name delete_temp_folder\
-            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/temp/:/home/multiqc" \
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+':/home/multiqc" \
             christophevde/ubuntu_bash:v2.2_stable \
-            /bin/bash -c "rm -R /home/multiqc"')
+            /bin/bash -c "rm -R /home/multiqc/temp"')
     #EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
     for sample in ids:
         my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_MultiQC/multiqc_report.html")
@@ -379,6 +380,7 @@ while error_count == 0:
     #CREATE TEMP FOLDER--------------------------------------------------------------------------------------
     os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/", exist_ok=True)
         #COPY FASTQC RESULTS---------------------------------------------------------------------------------
+    print("creating temporary directory to copy all fastqc results of trimmed data")
     for sample in ids:
         os.system('docker run -it --rm \
             --name copy_fastqc\
@@ -400,14 +402,14 @@ while error_count == 0:
             errors.append("[ERROR] STEP 5: MultiQC; quality control trimmed data (short reads)")
             error_count +=1
     else:
-        print("  - MultiQC results for the trimmed data of sample "+sample+" already exists")
+        print("  - MultiQC results for the full run (trimmed data) already exists")
         #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
     if os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/") and os.path.isdir(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/"):
         os.system('docker run -it --rm \
             --name delete_temp_folder\
-            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/temp/:/home/multiqc" \
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+':/home/multiqc" \
             christophevde/ubuntu_bash:v2.2_stable \
-            /bin/bash -c "rm -R /home/multiqc"')
+            /bin/bash -c "rm -R /home/multiqc/temp"')
     #EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
     for sample in ids:
         my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_MultiQC/multiqc_report.html")
