@@ -191,7 +191,7 @@ except:
     options["Run"] = date.today().strftime("%Y%m%d")
 #CHECK FOR ADAPTER INPUT, USE DEFAULT IF NOT PROVIDED--------------------------------------------------------
     if options["Adaptors"] == '':
-        options["Adaptors"] = options["Scripts"]+'NexteraPE-PE.fa'
+        options["Adaptors"] = options["Scripts"]+'/NexteraPE-PE.fa'
 #THREADS-----------------------------------------------------------------------------------------------------
 # give advanced users the option to overrule the automatic thread detection and specify the ammount themself
 # basic users can just press ENTER to accept the automatically sugested ammount of threads
