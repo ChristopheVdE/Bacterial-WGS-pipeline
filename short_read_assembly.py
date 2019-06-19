@@ -221,7 +221,7 @@ for i in folders:
 #CONVERT MOUNT_PATHS (INPUT) IF REQUIRED====================================================================  
 options_copy = options
 options = {}
-not_convert = ["Threads", "Group"]
+not_convert = ["Threads", "Group", "Run"]
 if system=="Windows":
     print("\nConverting Windows paths for use in Docker:")
     for key, value in options_copy.items():
