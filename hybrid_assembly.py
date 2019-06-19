@@ -183,14 +183,13 @@ while error_count == 0:
             options["Results"] = input("Input location to store the results here \n")
             print("SAMPLE INFO")
             options["Cor_samples"] = input("Input location of text file containing info on wich Illumina samples correspond with which MinIon barcode: \n")
-            print("START GENES")
-            options["Start_genes"] = input("\nInput location of multifasta containing start genes to search for (unicycler will use these to rotate the contigs so that they start with the start_gene): \n")
             options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
             options["Run"] = date.today().strftime("%Y%m%d")
 #OPTIONAL INPUT----------------------------------------------------------------------------------------
             print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
             advanced = input("Show optional settings? (y/n): ").lower()
             if advanced == "y" or advanced =="yes":
+                options["Start_genes"] = input("Input location of multifasta containing start genes to search for (unicycler will use these to rotate the contigs so that they start with the start_gene): \n")
                 options["Barcode_kit"] = input("Input the ID of the used barcoding kit: \n")
     #THREADS------------------------------------------------------------------------------------------
                 print("THREADS"+"-"*101)
@@ -209,6 +208,14 @@ while error_count == 0:
                 options["Genus"] = input("Input the genus of your sequenced organism here: \n")
                 options["Species"] = input("Input the species of your sequenced organism here: \n")
                 options["Kingdom"] = input("Input the Kingdom of your sequenced organism here: \n")
+    #CREATE OPTIONAL SETTINGS KEYS TO PREVENT ERRORS----------------------------------------------------
+            else:
+                options["Start_genes"] = ''
+                options["Barcode_kit"] = ''
+                options["Threads"] = str(s_threads)
+                options["Genus"] = ''
+                options["Species"] = ''
+                options["Kingdom"] = ''  
         print('='*108)
 #CREATE REQUIRED FOLDERS IF NOT EXIST-----------------------------------------------------------------------
     folders = [options["Results"]+"/Hybrid/"+options["Run"],]
@@ -246,7 +253,8 @@ while error_count == 0:
         loc.close()
 #MOVE (AND RENAME) ... TO ... FOLDER------------------------------------------------------------------------
     shutil.copy(options["Cor_samples"], options["Results"]+"/Hybrid/"+options["Run"]+"/corresponding_samples.txt")
-    shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
+    if not options["Start_genes"] == '':
+        shutil.copy(options["Start_genes"], options["Results"]+"/Hybrid/"+options["Run"]+"/start_genes.fasta")
 #CREATE ILLUMINA SAMPLE LIST + WRITE TO FILE----------------------------------------------------------------
     file = open(options["Results"]+"/Hybrid/"+options["Run"]+"/sampleList.txt",mode="w")
     for i in sample_list(options["Illumina"]):
