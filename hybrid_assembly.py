@@ -261,7 +261,7 @@ while error_count == 0:
         file.write(i+"\n")
     file.close()
 #COPY ILLUMINA SAMPLES TO RESULTS---------------------------------------------------------------------------
-    print("[STARTING] Hybrid assembly preparation: Short reads")
+    print("\n[HYBRID][SHORT READS] Copying rawdata") 
     copy = 'docker run -it --rm \
         --name copy_rawdata \
         -v "'+options["Illumina_m"]+':/home/rawdata/" \
@@ -271,6 +271,7 @@ while error_count == 0:
         /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
         && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+options["Run"]+'"'
     os.system(copy)
+    print("Done")
 #SHORT READS: FASTQC RAWDATA (DOCKER)------------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] FastQC rawdata")
     for sample in ids:
@@ -433,8 +434,7 @@ while error_count == 0:
             print("  - MultiQC results for the trimmed data of sample "+sample+" already exists")
     print("Done")
 #LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
-    print("\n[STARTING] Hybrid assembly preparation: Long reads")
-    print("\nDemultiplexing Long reads")
+    print("\n[HYBRID][LONG READS] Guppy: demultiplexing")
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
@@ -445,14 +445,14 @@ while error_count == 0:
             +options["Results"]+' '\
             +options["Run"]+' '\
             +options["Threads"])
-        print("Done")
         if not my_file.is_file():
             errors.append("[ERROR] STEP 6: Guppy demultiplexing failed")
             error_count +=1
     else:
-        print("Results already exist, nothing to be done")
+        print("  - Results already exist")
+    print("Done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
-    print("\nPerforming QC on Long reads")
+    print("\n[HYBRID][LONG READS] PycoQC: Performing QC on Long reads")
     if not os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/"):
         os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/")
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/QC_Long_reads.html")
@@ -464,14 +464,14 @@ while error_count == 0:
             +options["MinIon"]+'/fast5/pass '\
             +options["Results"]+'/Hybrid/'+options["Run"]+' '\
             +options["Threads"])
-        print("Done")
         if not my_file.is_file():
             errors.append("[ERROR] STEP 7: PycoQC quality control failed")
             error_count +=1
     else:
-        print("Results already exist, nothing to be done")
+        print("Results already exist")
+    print("Done")
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
-    print("\nTrimming Long reads")
+    print("\n[HYBRID][LONG READS] Porechop: Trimming Long reads")
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/02_Long_reads/02_QC/demultiplex_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
@@ -492,10 +492,10 @@ while error_count == 0:
             errors.append("[ERROR] STEP 8: Porechop demuliplex correction and trimming failed")
             error_count +=1
     else:
-        print("Results already exist, nothing to be done")
-    print("[COMPLETED] Hybrid assembly preparation: Long reads")
+        print("Results already exist")
+    print("Done")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
-    print("\n[STARTING] Unicycler: hybrid assembly")
+    print("\n[HYBRID][ASSEMBLY] Unicycler: building hybrid assembly")
     os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
         +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
@@ -506,6 +506,7 @@ while error_count == 0:
     # if not my_file.is_file():
     #     errors.append("[ERROR] STEP 9: Unicycler assembly failed")
     #     error_count +=1
+    print("Done")
 #BANDAGE----------------------------------------------------------------------------------------------------
     print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
     Bandage = input("Do you wan't to do a Bandage visualisalisation? (y/n)").lower()
@@ -516,9 +517,9 @@ while error_count == 0:
     elif Bandage == "n":
         print("skipping Bandage step")
 #PROKKA-----------------------------------------------------------------------------------------------------
+    print("\n[HYBRID][ANNOTATION] Prokka: annotating assembly")
     if system == "UNIX":
         os.system("dos2unix -q "+options["Scripts"]+"/Hybrid/02_Prokka.sh")
-    print("\n[STARTING] Prokka: hybrid assembly annotation")
     for sample in os.listdir(options["Results"]+"/Hybrid/"+options["Run"]+"/03_Assembly/"):
         my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/04_Prokka/"+sample+"/*.gff")
         if not my_file.is_file():
@@ -533,7 +534,8 @@ while error_count == 0:
                 errors.append("[ERROR] STEP 11: Prokka annotation failed")
                 error_count +=1
         else:
-            print("Results already exist for "+sample+", nothing to be done")
+            print("Results already exist for "+sample)
+    print("Done")
 #ERROR DISPLAY----------------------------------------------------------------------------------------------
 if error_count > 0:
     print("[ERROR] Assembly failed, see message(s) below to find out where:")

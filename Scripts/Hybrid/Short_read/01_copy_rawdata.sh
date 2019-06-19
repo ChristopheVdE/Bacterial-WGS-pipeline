@@ -30,10 +30,9 @@ dos2unix -q /home/Pipeline/Hybrid/${Run}/sampleList.txt
 #-----------------------------------------------------------------------------------------------------------
 
 # copy the 00_Rawdata into the current analysis folder------------------------------------------------------
-echo "\nCopying files, please wait"
+echo "  - Copying files, please wait"
 for id in `cat /home/Pipeline/Hybrid/${Run}/sampleList.txt`; do
     mkdir -p /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}//00_Rawdata
     cp -vrn /home/rawdata/${id}*.fastq.gz /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/00_Rawdata/ \
     2>&1 | tee -a /home/Pipeline/Hybrid/${Run}/01_Short_reads/${id}/00_Rawdata/stdout.txt
-done    
-echo "Done\n"
+done
