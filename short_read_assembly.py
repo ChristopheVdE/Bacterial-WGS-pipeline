@@ -155,6 +155,8 @@ options = {}
 try:
     if Path(sys.argv[1]).is_file():
         settings_parse(sys.argv[1])
+        options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts/Short_read"
+        options["Run"] = date.today().strftime("%Y%m%d")
     elif Path(sys.argv[1]).is_dir():
         options["Illumina"] = sys.argv[1]
         options["Results"] = sys.argv[2]+"/Short_reads"
@@ -186,6 +188,7 @@ except:
     options["Adaptors"] = input("Input the full path/location of the multifasta containing the adapter-sequences to trim. \
         \nPress ENTER to use the build in adapter file for trimming.\n")
     options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts/Short_read"
+    options["Run"] = date.today().strftime("%Y%m%d")
 #CHECK FOR ADAPTER INPUT, USE DEFAULT IF NOT PROVIDED--------------------------------------------------------
     if options["Adaptors"] == '':
         options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
