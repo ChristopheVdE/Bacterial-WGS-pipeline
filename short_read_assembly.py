@@ -185,7 +185,7 @@ except:
     options["Results"] = input("Input the full path/location of the folder where you want to save the analysis result:\n")+"/Short_reads"
     options["Adaptors"] = input("Input the full path/location of the multifasta containing the adapter-sequences to trim. \
         \nPress ENTER to use the build in adapter file for trimming.\n")
-    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Docker"
+    options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
 #CHECK FOR ADAPTER INPUT, USE DEFAULT IF NOT PROVIDED--------------------------------------------------------
     if options["Adaptors"] == '':
         options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
