@@ -171,7 +171,7 @@ try:
             options["Adapters"] = sys.argv[4]
         except:
             print("Adaptors not specified, using build in adaptor file for trimming")
-            options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
+            options["Adaptors"] = options["Scripts"]+'/NexteraPE-PE.fa'
 #SHOW TIPS--------------------------------------------------------------------------------------------------
 except:
     if system == "Windows":
@@ -191,7 +191,7 @@ except:
     options["Run"] = date.today().strftime("%Y%m%d")
 #CHECK FOR ADAPTER INPUT, USE DEFAULT IF NOT PROVIDED--------------------------------------------------------
     if options["Adaptors"] == '':
-        options["Adaptors"] = options["Scripts"]+'/Short_read/NexteraPE-PE.fa'
+        options["Adaptors"] = options["Scripts"]+'NexteraPE-PE.fa'
 #THREADS-----------------------------------------------------------------------------------------------------
 # give advanced users the option to overrule the automatic thread detection and specify the ammount themself
 # basic users can just press ENTER to accept the automatically sugested ammount of threads
