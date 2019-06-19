@@ -92,7 +92,6 @@ print("Done\n")
 def settings_parse(settings):
     file = open(settings,'r')
     global options
-    global analysis
     options = {}
     for line in file:
         if  "Illumina=" in line:

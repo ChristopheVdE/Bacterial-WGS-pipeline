@@ -1,8 +1,9 @@
 ############################################################################################################
-#NAME: run_assembly.py
+#NAME: hybrid assembly.py
 #AUTHOR: Christophe Van den Eynde
 #FUNCTION: creates some texts files containing location variables that are used by the snakefile as input
-#USAGE: pyhton3 get_enviroment.py
+#USAGE LINUX/MAC: python3 hybrid_assembly.py
+#USAGE WINDOWS: python.exe hybrid_assembly.py
 ############################################################################################################
 
 #TIMER START================================================================================================
@@ -94,7 +95,6 @@ print("Done\n")
 def settings_parse(settings):
     file = open(settings,'r')
     global options
-    global analysis
     options = {}
     for line in file:
         if  "Illumina=" in line:
