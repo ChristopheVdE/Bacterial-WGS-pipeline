@@ -153,6 +153,7 @@ def sample_list(Illumina):
 #===========================================================================================================
 
 #HYBRID ASSEMBLY============================================================================================
+options = {}
 #ERROR COLLECTION-------------------------------------------------------------------------------------------
 errors = []
 error_count = 0
@@ -160,7 +161,7 @@ while error_count == 0:
 #GET INPUT--------------------------------------------------------------------------------------------------
     print("\n[HYBRID ASSEMBLY] SETTINGS"+"="*74)
     try:
-        settings = sys.argv[2]
+        settings = sys.argv[1]
     except:
 #ASK FOR SETTINGS FILE----------------------------------------------------------------------------------
         question = input("Do you have a premade settings-file that you want to use? (y/n) \
@@ -276,7 +277,7 @@ while error_count == 0:
                 christophevde/fastqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
                 && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh '+sample+' '+options["Run"]+' '+options["Threads"]+'"')
-            if not my_file1.is_file() and not my_file2.is_file():
+            if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 1: FastQC; quality control rawdata (short reads)")
                 error_count +=1
         else:
@@ -284,18 +285,18 @@ while error_count == 0:
     print("Done")
 #SHORT READS: MULTIQC RAWDATA (DOCKER)-----------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] MultiQC rawdata")
-#FULL RUN------------------------------------------------------------------------------------------------
-    #CREATE TEMP FOLDER----------------------------------------------------------------------------------
-    os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"temp/", exist_ok=True)
-    #COPY FASTQC RESULTS---------------------------------------------------------------------------------
+    #FULL RUN------------------------------------------------------------------------------------------------
+        #CREATE TEMP FOLDER----------------------------------------------------------------------------------
+    os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/temp/", exist_ok=True)
+        #COPY FASTQC RESULTS---------------------------------------------------------------------------------
     for sample in ids:
-        content = glob.glob(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_FastQC/*")
-        for i in content:
-            if Path(i).is_file():
-                shutil.copy(i, options["Results"]+"/Hybrid/"+options["Run"]+"temp/")
-            else:
-                copy_tree(i, options["Results"]+"/Hybrid/"+options["Run"]+"temp/")
-    #EXECUTE MULTIQC-------------------------------------------------------------------------------------
+        os.system('docker run -it --rm\
+            --name copy_fastqc\
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads/'+sample+'/01_QC-Rawdata/QC_FastQC/:/home/fastqc" \
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/temp/:/home/multiqc" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /bin/bash -c "cp -rn /home/fastqc/* /home/multiqc"')
+        #EXECUTE MULTIQC-------------------------------------------------------------------------------------
     my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/QC-Rawdata/multiqc_report.html")
     if not my_file.is_file():
         os.system('docker run -it --rm \
@@ -310,10 +311,14 @@ while error_count == 0:
             error_count +=1
     else:
         print("  - MultiQC results for the rawdata of sample "+sample+" already exists")
-    #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
+        #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
     if os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/") and os.path.isdir(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/"):
-        shutil.rmtree(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/")
-#EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
+        os.system('docker run -it --rm\
+            --name delete_temp_folder\
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/temp/:/home/multiqc" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /bin/bash -c "rm -R /home/multiqc"')
+    #EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
     for sample in ids:
         my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_MultiQC/multiqc_report.html")
         if not my_file.is_file():
@@ -323,7 +328,7 @@ while error_count == 0:
                 -v "'+options["Results_m"]+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh '+options["Run"]+'"')
+                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh '+sample+' '+options["Run"]+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -333,8 +338,9 @@ while error_count == 0:
 #SHORT READS: TRIMMING (DOCKER)------------------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] Trimming")
     for sample in ids:
-        my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/02_Trimmomatic/"+sample+"*_P.fastq.gz")
-        if not my_file.is_file():
+        my_file1 = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/02_Trimmomatic/"+sample+"_L001_R1_001_P.fastq.gz")
+        my_file2 = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/02_Trimmomatic/"+sample+"_L001_R2_001_P.fastq.gz")
+        if not my_file1.is_file() and not my_file2.is_file():
             os.system('docker run -it --rm \
                 --name trimmomatic \
                 -v "'+options["Scripts_m"]+':/home/Scripts/" \
@@ -342,7 +348,7 @@ while error_count == 0:
                 christophevde/trimmomatic:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh \
                 && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh '+sample+' '+options["Run"]+' '+options["Threads"]+'"')
-            if not my_file.is_file():
+        if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 3: TRIMMOMATIC; trimming adaptors form reads (short reads)")
                 error_count +=1
         else:
@@ -351,8 +357,9 @@ while error_count == 0:
 #SHORT READS: FASTQC TRIMMED (DOCKER)------------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] FastQC Trimmed data")
     for sample in ids:
-        my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/*_P_fastqc.html")
-        if not my_file.is_file():
+        my_file1 = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/"+sample+"_L001_R1_001_P_fastqc.html")
+        my_file2 = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/"+sample+"_L001_R1_001_P_fastqc.html")
+        if not my_file1.is_file() and not my_file2.is_file():
             os.system('docker run -it --rm \
                 --name fastqc_trim \
                 -v "'+options["Scripts_m"]+':/home/Scripts/" \
@@ -360,7 +367,7 @@ while error_count == 0:
                 christophevde/fastqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh \
                 && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh '+sample+' '+options["Run"]+' '+options["Threads"]+'"')
-            if not my_file.is_file():
+            if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 4: FastQC; quality control trimmed data (short reads)")
                 error_count +=1
         else:
@@ -368,32 +375,40 @@ while error_count == 0:
     print("Done")
 #SHORT READS: MULTIQC TRIMMED (DOCKER)-----------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] MultiQC Trimmed data")
-#FULL RUN------------------------------------------------------------------------------------------------
-    #CREATE TEMP FOLDER----------------------------------------------------------------------------------
-    os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/temp/", exist_ok=True)
-    #COPY FASTQC RESULTS---------------------------------------------------------------------------------
+    #FULL RUN------------------------------------------------------------------------------------------------
+    #CREATE TEMP FOLDER--------------------------------------------------------------------------------------
+    os.makedirs(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/", exist_ok=True)
+        #COPY FASTQC RESULTS---------------------------------------------------------------------------------
     for sample in ids:
-        shutil.copy(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/*", \
-            options["Results"]+"/Hybrid/"+options["Run"]+"/temp/")
-    #EXECUTE MULTIQC-------------------------------------------------------------------------------------
-    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/QC-Rawdata/multiqc_report.html")
+        os.system('docker run -it --rm \
+            --name copy_fastqc\
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads/'+sample+'/03_QC-Trimmomatic_Paired/QC_FastQC/:/home/fastqc" \
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads/QC_MultiQC/temp/:/home/multiqc" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /bin/bash -c "cp -rn /home/fastqc/* /home/multiqc"')
+        #EXECUTE MULTIQC-------------------------------------------------------------------------------------
+    my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/QC-Trimmed/multiqc_report.html")
     if not my_file.is_file():
         os.system('docker run -it --rm \
-            --name multiqc_raw \
+            --name multiqc_trimmed \
             -v "'+options["Scripts_m"]+':/home/Scripts/" \
             -v "'+options["Results_m"]+':/home/Pipeline/" \
             christophevde/multiqc:v2.2_stable \
             /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh \
-            && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh '+options["Run"]+'"')
+            && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh '+sample+' '+options["Run"]+'"')
         if not my_file.is_file():
-            errors.append("[ERROR] STEP 5: MultiQC; quality control rawdata (short reads)")
+            errors.append("[ERROR] STEP 5: MultiQC; quality control trimmed data (short reads)")
             error_count +=1
     else:
-        print("  - MultiQC results for the rawdata of sample "+sample+" already exists")
-    #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
+        print("  - MultiQC results for the trimmed data of sample "+sample+" already exists")
+        #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
     if os.path.exists(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/") and os.path.isdir(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/"):
-        shutil.rmtree(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/QC_MultiQC/temp/")
-#EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
+        os.system('docker run -it --rm \
+            --name delete_temp_folder\
+            -v "'+options["Results"]+'/Hybrid/'+options["Run"]+'/temp/:/home/multiqc" \
+            christophevde/ubuntu_bash:v2.2_stable \
+            /bin/bash -c "rm -R /home/multiqc"')
+    #EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
     for sample in ids:
         my_file = Path(options["Results"]+"/Hybrid/"+options["Run"]+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_MultiQC/multiqc_report.html")
         if not my_file.is_file():
