@@ -158,7 +158,7 @@ try:
     elif Path(sys.argv[1]).is_dir():
         options["Illumina"] = sys.argv[1]
         options["Results"] = sys.argv[2]+"/Short_reads"
-        options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Docker"
+        options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
         options["Run"] = date.today().strftime("%Y%m%d")
         try:
             options["Threads"] = sys.argv[3]
