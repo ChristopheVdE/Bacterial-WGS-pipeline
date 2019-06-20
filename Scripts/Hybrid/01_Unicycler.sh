@@ -13,7 +13,7 @@ usage() {
 		1: Sample ID (Illumina)
 		2: Barcode (MinION)
 		3: Path to the results folder
-		3: [OPTIONAL] Ammount of threads to use (default = 1)\n"
+		4: [OPTIONAL] Ammount of threads to use (default = 1)\n"
 	echo ${errorcode};
 	exit 1;
 }
@@ -29,7 +29,7 @@ Illumina2="${3}/01_Short_reads/${1}/02_Trimmomatic/${1}_L001_R2_001_P.fastq.gz"
 MinIon="${3}/02_Long_reads/03_Trimming/BC${2}.fastq.gz"
 Results="${3}/03_Assembly/${1}"
 start_genes="${3}/start_genes.fasta"
-threads=${3:-"1"}
+threads=${4:-"1"}
 #==========================================================================================================
 
 #RUN UNICYCLER=============================================================================================
