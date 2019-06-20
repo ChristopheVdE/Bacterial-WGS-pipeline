@@ -157,7 +157,7 @@ errors = []
 error_count = 0
 while error_count == 0:
 #GET INPUT--------------------------------------------------------------------------------------------------
-    print("\n[HYBRID ASSEMBLY] SETTINGS"+"="*74)
+    print("\n[HYBRID][SETTINGS]"+"="*82)
     try:
         settings = sys.argv[1]
     except:
@@ -181,12 +181,12 @@ while error_count == 0:
             options["MinIon"] = input("Input location of MinIon sample files here: \n")    
             print("\nRESULTS"+'-'*93)
             options["Results"] = input("Input location to store the results here \n")
-            print("SAMPLE INFO")
+            print("SAMPLE INFO"+'-'*89)
             options["Cor_samples"] = input("Input location of text file containing info on wich Illumina samples correspond with which MinIon barcode: \n")
             options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
             options["Run"] = date.today().strftime("%Y%m%d")
 #OPTIONAL INPUT----------------------------------------------------------------------------------------
-            print("\n[HYBRID ASSEMBLY] OPTIONAL SETTINGS"+"="*65)
+            print("\n[HYBRID] OPTIONAL SETTINGS"+"="*65)
             advanced = input("Show optional settings? (y/n): ").lower()
             if advanced == "y" or advanced =="yes":
                 options["Start_genes"] = input("Input location of multifasta containing start genes to search for (unicycler will use these to rotate the contigs so that they start with the start_gene): \n")
@@ -495,17 +495,38 @@ while error_count == 0:
         print("Results already exist")
     print("Done")
 #HYBRID ASSEMBLY--------------------------------------------------------------------------------------------
+    #READ SAMPLE FILE---------------------------------------------------------------------------------------
+    print("Collecting data of corresponding Illumina and MinIon samples")
+    file = open(options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt', "r")
+    c = 0
+    samples = {}
+    for line in file:
+        if c >= 1:
+            #skip header line
+            ids = line.replace('\n','').split(",")
+            samples[ids[0]] = ids[1]
+        c +=1
+    file.close()
+    #EXECUTE UNICYCLER---------------------------------------------------------------------------------------
     print("\n[HYBRID][ASSEMBLY] Unicycler: building hybrid assembly")
-    os.system('python3 ./Scripts/Hybrid/01_Unicycler.py '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/01_Short_reads '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/02_Long_reads/03_Trimming '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/corresponding_samples.txt '\
-        +options["Results"]+'/Hybrid/'+options["Run"]+'/start_genes.fasta '\
-        +options["Threads"])
-    # if not my_file.is_file():
-    #     errors.append("[ERROR] STEP 9: Unicycler assembly failed")
-    #     error_count +=1
+    if system == "UNIX":
+        os.system("dos2unix -q "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
+    for key, value in samples.items():
+        #key = barcode; value = Illumina ID
+        my_file = Path(options["Results"]+'/Hybrid/'+options["Run"]+'/03_Assembly/'+value+'/assembly.gfa')
+        if not my_file.is_file():
+            print("Creating hybrid assembly with Illumina sample: "+value+" and MinIon sample with Barcode: "+key)
+            os.system('sh '+options["Scripts"]+'/Hybrid/01_Unicyler.sh'\
+                +value+' '\
+                +key+' '\
+                +options["Results"]+'/Hybrid/'+options["Run"]+' '\
+                +options["Threads"])
+            if not my_file.is_file():
+                errors.append("[ERROR] STEP 9: Unicycler hybrid assembly failed")
+                error_count +=1
+        else:
+            print("  - Results for sample "+value+" already exist")
+        print("Done")
     print("Done")
 #BANDAGE----------------------------------------------------------------------------------------------------
     print("Bandage is an optional step used to visualise and correct the created assemblys, and is completely manual")
