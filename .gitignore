@@ -3,3 +3,11 @@
 *.gfa
 *.log
 *.html
+Knipsel.PNG
+multiqc_error.PNG
+stdout_err.txt
+trim_error.PNG
+corresponding_samples.txt
+settings_hybrid.txt
+settings_long.txt
+start_gene.fasta
