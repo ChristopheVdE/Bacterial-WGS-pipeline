@@ -1,4 +1,8 @@
 # Whole genome sequencing pipeline for bacterial samples
+
+## WARNING
+**This pipeline/ code was written for my bioinformatics-insternship in the Insititute of Tropical Medicine in Antwerp (Belgium). Please contact them if you want to use this pipeline and get the latest version.**
+
 ## Introduction
 Three containerised assembly pipelines for whole genome assemblies of bacterial DNA controlled by one wrapper-script.
   - short read assembly (Illumina reads)
