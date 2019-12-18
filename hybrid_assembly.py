@@ -113,12 +113,11 @@ class PathConverter:
         if SystemType == 'Windows':
             for data in [class1, class2]:
                 for key, value in data.__dict__.items():
-                    if key in ["StartGenes"]:
-                        for letter in list(string.ascii_lowercase+string.ascii_uppercase):
-                            if value.startswith(letter+":/"):
-                                self.__dict__[key] = value.replace(letter+":/","/"+letter.lower()+"//").replace('\\','/')
-                            elif value.startswith(letter+":\\"):
-                                self.__dict__[key] = value.replace(letter+":\\","/"+letter.lower()+"//").replace('\\','/')
+                    for letter in list(string.ascii_lowercase+string.ascii_uppercase):
+                        if value.startswith(letter+":/"):
+                            self.__dict__[key] = value.replace(letter+":/","/"+letter.lower()+"//").replace('\\','/')
+                        elif value.startswith(letter+":\\"):
+                            self.__dict__[key] = value.replace(letter+":\\","/"+letter.lower()+"//").replace('\\','/')
         else:
             for key, value in data.__dict__.items():
                 self.__dict__[key] = value
@@ -173,7 +172,7 @@ Organism.CreateOrganismFile()
 # Activate Timer: Full analysis -----------------------------------------------------------------------------
 timer = Timer()
 
-# Enable error correction -----------------------------------------------------------------------------------
+# Enable error collection -----------------------------------------------------------------------------------
 errors = []
 error_count = 0
 # ===========================================================================================================
