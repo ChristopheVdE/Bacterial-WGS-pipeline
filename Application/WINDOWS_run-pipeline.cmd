@@ -14,34 +14,34 @@ REM SHORT READ WRAPPER----------------------------------------------
 IF  %analysis%==1 (
     echo [SHORT] Starting Short reads assembly
     echo.
-    python.exe short_read_assembly.py
+    python.exe ./Scripts/Short_read/short_read_assembly.py
 )
 IF %analysis%==short (
     echo [SHORT] Starting Short reads assembly
     echo.
-    python.exe short_read_assembly.py
+    python.exe ./Scripts/Short_read/short_read_assembly.py
 )
 REM LONG READ ASSEMBLY-----------------------------------------------
 IF  %analysis%==2 (
     echo [LONG] Starting Long reads assembly
     echo.
-    python.exe long_read_assembly.py
+    python.exe ./Scripts/Long_read/long_read_assembly.py
 )
 IF %analysis%==long (
     echo [LONG] Starting Long reads assembly
     echo.
-    python.exe long_read_assembly.py
+    python.exe ./Scripts/Long_read/long_read_assembly.py
 )
 REM HYBRID ASSEMBLY---------------------------------------------------
 IF  %analysis%==3 (
     echo [HYBRID] Starting Hybrid assembly
     echo.
-    python.exe hybrid_assembly.py
+    python.exe ./Scripts/Hybrid/hybrid_assembly.py
 )
 IF %analysis%==hybrid (
     echo [HYBRID] Starting Hybrid assembly
     echo.
-    python.exe hybrid_assembly.py
+    python.exe ./Scripts/Hybrid/hybrid_assembly.py
 )
 REM ------------------------------------------------------------------
 
