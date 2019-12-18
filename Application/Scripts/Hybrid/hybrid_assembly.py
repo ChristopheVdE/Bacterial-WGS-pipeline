@@ -58,10 +58,10 @@ class Settings:
     def __init__(self):
         self.Illumina               = input("location of Illumina samples: ")
         self.MinIon                 = input("location of Minion samples: ")
+        self.Results                = input("Where do you want to save the results: ")
         self.CorrespondingSamples   = input("Input location of text file containing info on wich Illumina sample corresponds with which MinIon sample: ")
         self.Adaptors               = input("location of the adaptorfile for trimming: ")
         self.BarcodeKit             = input("which barcode-kit was used for the Minion samples: ")
-        self.Results                = input("Where do you want to save the results: ")
         self.Run                    = date.today().strftime("%Y%m%d")
         self.Scripts                = os.path.dirname(os.path.realpath(__file__))
 
@@ -136,7 +136,7 @@ class Timer:
     def StopTimer(self, step):
         self.__dict__[step] = datetime.now() - self.__dict__[step]
         self.__dict__[step] = str(self.__dict__[step]).split(":")
-        self.__dict__[step] = "{}H, {}MM, {}SS".format(self.__dict__[step][0], self.__dict__[step][1], self.__dict__[step][2].split(".")[0])
+        # self.__dict__[step] = "{}H, {}MM, {}SS".format(self.__dict__[step][0], self.__dict__[step][1], self.__dict__[step][2].split(".")[0])
 
 # FUNCTIONS==================================================================================================
 # List modules ----------------------------------------------------------------------------------------------
@@ -166,8 +166,8 @@ def sample_list(Illumina):
 
 # ASSEMBLY PREPARATION: USER INPUT===========================================================================
 # Ask For "Settings" & "Organism"-file ----------------------------------------------------------------------
-settingsfile = input("Do you have a premade Settings-file? (y/n): ").lower()
-organismfile = input("Do you have a premade file containing info about the organism of which you have samples? (y/n): ").lower()
+settingsfile = input("Do you have a premade Settings-file that you want to use? (y/n): ").lower()
+organismfile = input("Do you have a premade file containing info about the organism of your samples? (y/n): ").lower()
 
 # Get sytem info --------------------------------------------------------------------------------------------
 system = SystemInfo()
