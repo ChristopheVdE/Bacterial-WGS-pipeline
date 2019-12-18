@@ -46,14 +46,14 @@ class SystemInfo:
     def GetThreadsToUse(self):
         # Tip to increase maximum aoount of threads for Docker
         if self.DockerThreads < self.SystemThreads:
-            print("You might still be able to increase the amount of threads available to Docker. Check your Docker or Virtual-Machine settigns")
+            print("You might still be able to increase the amount of threads available to Docker. Check your Docker or Virtual-Machine Settings")
         # Ask user for the amount of threads to use for the analysis
         self.UseThreads = int(input("How many threads do you want to use for the analysis (min = 1, max = {}): ".format(self.DockerThreads)))
         while self.UseThreads not in range(1, self.DockerThreads + 1):
             self.UseThreads = int(input("[ERROR] Chosen amount of threads is outside the possible range (min = 1, max = {}): ".format(self.DockerThreads)))
 
 # User settings --------------------------------------------------------------------------------------------
-class Settigns:
+class Settings:
     def __init__(self):
         self.Illumina               = input("location of Illumina samples: ")
         self.MinIon                 = input("location of Minion samples: ")
@@ -154,19 +154,19 @@ system.TranslateSubprocesOutput()
 system.GetThreadsToUse()
 
 # Get general settings --------------------------------------------------------------------------------------
-UserSettigns = Settigns()
-UserSettigns.CheckLocations()
-UserSettigns.CreateFoldersIfNotExist()
+UserSettings = Settings()
+UserSettings.CheckLocations()
+UserSettings.CreateFoldersIfNotExist()
 
 # Get organism specific info --------------------------------------------------------------------------------
 Organism = OrganismData()
 Organism.CheckLocations()
 
 # Convert folderpaths for mounting in docker-container when using Windows -----------------------------------
-ConvertedPaths = PathConverter(system.SystemType, UserSettigns, Organism)
+ConvertedPaths = PathConverter(system.SystemType, UserSettings, Organism)
 
 # Save the info in the corresponding file -------------------------------------------------------------------
-UserSettigns.CreateSettingsFile()
+UserSettings.CreateSettingsFile()
 Organism.CreateOrganismFile()
 
 # Activate Timer: Full analysis -----------------------------------------------------------------------------
@@ -179,13 +179,13 @@ error_count = 0
 
 # ASSEMBLY PREPARATION: GENERAL PREPARATION =================================================================
 # Move and rename required "info"-files to "Results"-folder -------------------------------------------------
-shutil.copy(UserSettigns.CorrespondingSamples, UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/corresponding_samples.txt")
+shutil.copy(UserSettings.CorrespondingSamples, UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/corresponding_samples.txt")
 if not Organism.StartGenes == '':
-    shutil.copy(Organism.StartGenes, UserSettigns.Results + "/Hybrid/" + UserSettigns.Run + "/start_genes.fasta")
+    shutil.copy(Organism.StartGenes, UserSettings.Results + "/Hybrid/" + UserSettings.Run + "/start_genes.fasta")
 
 # List content of "Illumina"-folder and save it in a file ---------------------------------------------------
-file = open(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/sampleList.txt",mode="w")
-for i in sample_list(UserSettigns.Illumina):
+file = open(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/sampleList.txt",mode="w")
+for i in sample_list(UserSettings.Illumina):
     file.write(i+"\n")
 file.close()
 
@@ -198,7 +198,7 @@ copy = 'docker run -it --rm \
     -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
     christophevde/ubuntu_bash:v2.2_stable \
     /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
-    && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+UserSettigns.Run+'"'
+    && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+UserSettings.Run+'"'
 os.system(copy)
 print("Done")
 
@@ -211,8 +211,8 @@ while error_count == 0:
 # SHORT READS: FASTQC RAWDATA (DOCKER)-------------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] FastQC rawdata")
     for sample in ids:
-        my_file1 = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_FastQC/"+sample+"_L001_R1_001_fastqc.html")
-        my_file2 = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_FastQC/"+sample+"_L001_R1_001_fastqc.html")
+        my_file1 = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_FastQC/"+sample+"_L001_R1_001_fastqc.html")
+        my_file2 = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_FastQC/"+sample+"_L001_R1_001_fastqc.html")
         if not my_file1.is_file() and not my_file2.is_file():
             os.system('docker run -it --rm \
                 --name fastqc_raw \
@@ -220,7 +220,7 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/fastqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh '+sample+' '+UserSettigns.Run+' '+system.UseThreads+'"')
+                && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
             if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 1: FastQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -231,17 +231,17 @@ while error_count == 0:
 #SHORT READS: MULTIQC RAWDATA (DOCKER)-----------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] MultiQC rawdata")
     #FULL RUN------------------------------------------------------------------------------------------------
-    my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/QC_MultiQC/QC-Rawdata/multiqc_report.html")
+    my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/QC_MultiQC/QC-Rawdata/multiqc_report.html")
     if not my_file.is_file():
         #CREATE TEMP FOLDER----------------------------------------------------------------------------------
-        os.makedirs(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/temp/", exist_ok=True)
+        os.makedirs(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/temp/", exist_ok=True)
         #COPY FASTQC RESULTS---------------------------------------------------------------------------------
         print("creating temporary directory to copy all fastqc results of rawdata")
         for sample in ids:
             os.system('docker run -it --rm\
                 --name copy_fastqc\
-                -v "'+UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/01_Short_reads/'+sample+'/01_QC-Rawdata/QC_FastQC/:/home/fastqc" \
-                -v "'+UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/temp/:/home/multiqc" \
+                -v "'+UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/01_Short_reads/'+sample+'/01_QC-Rawdata/QC_FastQC/:/home/fastqc" \
+                -v "'+UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/temp/:/home/multiqc" \
                 christophevde/ubuntu_bash:v2.2_stable \
                 /bin/bash -c "cp -rn /home/fastqc/* /home/multiqc"')
         #EXECUTE MULTIQC-------------------------------------------------------------------------------------
@@ -251,7 +251,7 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_FullRun.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_FullRun.sh '+UserSettigns.Run+'"')
+                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_FullRun.sh '+UserSettings.Run+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -260,12 +260,12 @@ while error_count == 0:
         #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
         os.system('docker run -it --rm\
             --name delete_temp_folder\
-            -v "'+UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+':/home/multiqc" \
+            -v "'+UserSettings.Results+'/Hybrid/'+UserSettings.Run+':/home/multiqc" \
             christophevde/ubuntu_bash:v2.2_stable \
             /bin/bash -c "rm -R /home/multiqc/temp"')
     #EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
     for sample in ids:
-        my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_MultiQC/multiqc_report.html")
+        my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/01_QC-Rawdata/QC_MultiQC/multiqc_report.html")
         if not my_file.is_file():
             os.system('docker run -it --rm \
                 --name multiqc_raw \
@@ -273,7 +273,7 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh '+sample+' '+UserSettigns.Run+'"')
+                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh '+sample+' '+UserSettings.Run+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -283,8 +283,8 @@ while error_count == 0:
 #SHORT READS: TRIMMING (DOCKER)------------------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] Trimming")
     for sample in ids:
-        my_file1 = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/02_Trimmomatic/"+sample+"_L001_R1_001_P.fastq.gz")
-        my_file2 = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/02_Trimmomatic/"+sample+"_L001_R2_001_P.fastq.gz")
+        my_file1 = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/02_Trimmomatic/"+sample+"_L001_R1_001_P.fastq.gz")
+        my_file2 = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/02_Trimmomatic/"+sample+"_L001_R2_001_P.fastq.gz")
         if not my_file1.is_file() and not my_file2.is_file():
             os.system('docker run -it --rm \
                 --name trimmomatic \
@@ -292,7 +292,7 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/trimmomatic:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh \
-                && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh '+sample+' '+UserSettigns.Run+' '+system.UseThreads+'"')
+                && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
         if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 3: TRIMMOMATIC; trimming adaptors form reads (short reads)")
                 error_count +=1
@@ -302,8 +302,8 @@ while error_count == 0:
 #SHORT READS: FASTQC TRIMMED (DOCKER)------------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] FastQC Trimmed data")
     for sample in ids:
-        my_file1 = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/"+sample+"_L001_R1_001_P_fastqc.html")
-        my_file2 = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/"+sample+"_L001_R1_001_P_fastqc.html")
+        my_file1 = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/"+sample+"_L001_R1_001_P_fastqc.html")
+        my_file2 = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_FastQC/"+sample+"_L001_R1_001_P_fastqc.html")
         if not my_file1.is_file() and not my_file2.is_file():
             os.system('docker run -it --rm \
                 --name fastqc_trim \
@@ -311,7 +311,7 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/fastqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh \
-                && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh '+sample+' '+UserSettigns.Run+' '+system.UseThreads+'"')
+                && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
             if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 4: FastQC; quality control trimmed data (short reads)")
                 error_count +=1
@@ -321,17 +321,17 @@ while error_count == 0:
 #SHORT READS: MULTIQC TRIMMED (DOCKER)-----------------------------------------------------------------------
     print("\n[HYBRID][SHORT READS] MultiQC Trimmed data")
     #FULL RUN------------------------------------------------------------------------------------------------
-    my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/QC_MultiQC/QC-Trimmed/multiqc_report.html")
+    my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/QC_MultiQC/QC-Trimmed/multiqc_report.html")
     if not my_file.is_file():
     #CREATE TEMP FOLDER--------------------------------------------------------------------------------------
-        os.makedirs(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/temp/", exist_ok=True)
+        os.makedirs(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/temp/", exist_ok=True)
         #COPY FASTQC RESULTS---------------------------------------------------------------------------------
         print("creating temporary directory to copy all fastqc results of trimmed data")
         for sample in ids:
             os.system('docker run -it --rm \
                 --name copy_fastqc\
-                -v "'+UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/01_Short_reads/'+sample+'/03_QC-Trimmomatic_Paired/QC_FastQC/:/home/fastqc" \
-                -v "'+UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/temp/:/home/multiqc" \
+                -v "'+UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/01_Short_reads/'+sample+'/03_QC-Trimmomatic_Paired/QC_FastQC/:/home/fastqc" \
+                -v "'+UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/temp/:/home/multiqc" \
                 christophevde/ubuntu_bash:v2.2_stable \
                 /bin/bash -c "cp -rn /home/fastqc/* /home/multiqc"')
         #EXECUTE MULTIQC-------------------------------------------------------------------------------------
@@ -341,7 +341,7 @@ while error_count == 0:
             -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
             christophevde/multiqc:v2.2_stable \
             /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh \
-            && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh '+UserSettigns.Run+'"')
+            && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh '+UserSettings.Run+'"')
         if not my_file.is_file():
             errors.append("[ERROR] STEP 5: MultiQC; quality control trimmed data (short reads)")
             error_count +=1
@@ -350,12 +350,12 @@ while error_count == 0:
         #REMOVE TEMP FOLDER----------------------------------------------------------------------------------
         os.system('docker run -it --rm \
             --name delete_temp_folder\
-            -v "'+UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+':/home/multiqc" \
+            -v "'+UserSettings.Results+'/Hybrid/'+UserSettings.Run+':/home/multiqc" \
             christophevde/ubuntu_bash:v2.2_stable \
             /bin/bash -c "rm -R /home/multiqc/temp"')
     #EACH SAMPLE SEPARALTY-----------------------------------------------------------------------------------
     for sample in ids:
-        my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html")
+        my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/01_Short_reads/"+sample+"/03_QC-Trimmomatic_Paired/QC_MultiQC/multiqc_report.html")
         if not my_file.is_file():
             os.system('docker run -it --rm \
                 --name multiqc_raw \
@@ -363,7 +363,7 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
                 /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_oneSample.sh \
-                && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_oneSample.sh '+sample+' '+UserSettigns.Run+'"')
+                && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_oneSample.sh '+sample+' '+UserSettings.Run+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 5: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -376,15 +376,15 @@ while error_count == 0:
 # [HYBRID ASSEMBLY] LONG READS ==============================================================================
 #LONG READS: DEMULTIPLEXING (GUPPY)-------------------------------------------------------------------------
     print("\n[HYBRID][LONG READS] Guppy: demultiplexing")
-    my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
+    my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/01_Demultiplex/barcoding_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+UserSettigns.Scripts+"/Hybrid/Long_read/01_demultiplex.sh")
+            os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/Long_read/01_demultiplex.sh")
         os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
-            +UserSettigns.MinIon+'/fastq/pass '\
-            +UserSettigns.Results+' '\
-            +UserSettigns.Run+' '\
+            +UserSettings.MinIon+'/fastq/pass '\
+            +UserSettings.Results+' '\
+            +UserSettings.Run+' '\
             +system.UseThreads)
         if not my_file.is_file():
             errors.append("[ERROR] STEP 6: Guppy demultiplexing failed")
@@ -394,16 +394,16 @@ while error_count == 0:
     print("Done")
 #LONG READS: QC (PYCOQC)------------------------------------------------------------------------------------
     print("\n[HYBRID][LONG READS] PycoQC: Performing QC on Long reads")
-    if not os.path.exists(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/02_QC/"):
-        os.makedirs(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/02_QC/")
-    my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/02_QC/QC_Long_reads.html")
+    if not os.path.exists(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/02_QC/"):
+        os.makedirs(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/02_QC/")
+    my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/02_QC/QC_Long_reads.html")
     if not my_file.is_file():
         #file doesn't exist -> pycoqc hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+UserSettigns.Scripts+"/Hybrid/Long_read/02_pycoQC.sh") 
+            os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/Long_read/02_pycoQC.sh") 
         os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
-            +UserSettigns.MinIon+'/fast5/pass '\
-            +UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+' '\
+            +UserSettings.MinIon+'/fast5/pass '\
+            +UserSettings.Results+'/Hybrid/'+UserSettings.Run+' '\
             +system.UseThreads)
         if not my_file.is_file():
             errors.append("[ERROR] STEP 7: PycoQC quality control failed")
@@ -413,22 +413,22 @@ while error_count == 0:
     print("Done")
 #LONG READS: DEMULTIPLEXING + TRIMMING (PORECHOP)-----------------------------------------------------------
     print("\n[HYBRID][LONG READS] Porechop: Trimming Long reads")
-    my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/02_QC/demultiplex_summary.txt")
+    my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/02_QC/demultiplex_summary.txt")
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+UserSettigns.Scripts+"/Hybrid/Long_read/03_Trimming.sh")
+            os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/Long_read/03_Trimming.sh")
         #demultiplex correct + trimming 
-        os.system('sh '+UserSettigns.Scripts+'/Hybrid/Long_read/03_Trimming.sh '\
-            +UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/02_Long_reads/01_Demultiplex '\
-            +UserSettigns.Results+' '\
-            +UserSettigns.Run+' '\
+        os.system('sh '+UserSettings.Scripts+'/Hybrid/Long_read/03_Trimming.sh '\
+            +UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/02_Long_reads/01_Demultiplex '\
+            +UserSettings.Results+' '\
+            +UserSettings.Run+' '\
             +system.UseThreads)
         #creation of summary table of demultiplexig results (guppy and porechop)
-        os.system("python3 "+UserSettigns.Scripts+"/Hybrid/Long_read/04_demultiplex_compare.py "\
-            +UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/01_Demultiplex/ "\
-            +UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/03_Trimming/ "\
-            +UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/02_Long_reads/02_QC/")
+        os.system("python3 "+UserSettings.Scripts+"/Hybrid/Long_read/04_demultiplex_compare.py "\
+            +UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/01_Demultiplex/ "\
+            +UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/03_Trimming/ "\
+            +UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/02_QC/")
         if not my_file.is_file():
             errors.append("[ERROR] STEP 8: Porechop demuliplex correction and trimming failed")
             error_count +=1
@@ -441,7 +441,7 @@ while error_count == 0:
 # [HYBRID ASSEMBLY] HYBRID ASSEMBLY =========================================================================
     #READ SAMPLE FILE---------------------------------------------------------------------------------------
     print("Collecting data of corresponding Illumina and MinIon samples")
-    file = open(UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/corresponding_samples.txt', "r")
+    file = open(UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/corresponding_samples.txt', "r")
     c = 0
     samples = {}
     for line in file:
@@ -454,16 +454,16 @@ while error_count == 0:
     #EXECUTE UNICYCLER---------------------------------------------------------------------------------------
     print("\n[HYBRID][ASSEMBLY] Unicycler: building hybrid assembly")
     if system == "UNIX":
-        os.system("dos2unix -q "+UserSettigns.Scripts+"/Long_read/05_Unicycler.sh")
+        os.system("dos2unix -q "+UserSettings.Scripts+"/Long_read/05_Unicycler.sh")
     for key, value in samples.items():
         #key = barcode; value = Illumina ID
-        my_file = Path(UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/03_Assembly/'+value+'/assembly.gfa')
+        my_file = Path(UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/03_Assembly/'+value+'/assembly.gfa')
         if not my_file.is_file():
             print("Creating hybrid assembly with Illumina sample: "+value+" and MinIon sample with Barcode: "+key)
-            os.system('sh '+UserSettigns.Scripts+'/Hybrid/01_Unicyler.sh'\
+            os.system('sh '+UserSettings.Scripts+'/Hybrid/01_Unicyler.sh'\
                 +value+' '\
                 +key+' '\
-                +UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+' '\
+                +UserSettings.Results+'/Hybrid/'+UserSettings.Run+' '\
                 +system.UseThreads)
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 9: Unicycler hybrid assembly failed")
@@ -484,16 +484,16 @@ while error_count == 0:
 #PROKKA-----------------------------------------------------------------------------------------------------
     print("\n[HYBRID][ANNOTATION] Prokka: annotating assembly")
     if system == "UNIX":
-        os.system("dos2unix -q "+UserSettigns.Scripts+"/Hybrid/02_Prokka.sh")
-    for sample in os.listdir(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/03_Assembly/"):
-        my_file = Path(UserSettigns.Results+"/Hybrid/"+UserSettigns.Run+"/04_Prokka/"+sample+"/*.gff")
+        os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/02_Prokka.sh")
+    for sample in os.listdir(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/03_Assembly/"):
+        my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/04_Prokka/"+sample+"/*.gff")
         if not my_file.is_file():
-            os.system('sh '+UserSettigns.Scripts+'/Hybrid/02_Prokka.sh '\
-                +UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/04_Prokka/'+sample+' '\
+            os.system('sh '+UserSettings.Scripts+'/Hybrid/02_Prokka.sh '\
+                +UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/04_Prokka/'+sample+' '\
                 +Organism.Genus+' '\
                 +Organism.Species+' '\
                 +Organism.Kingdom+' '\
-                +UserSettigns.Results+'/Hybrid/'+UserSettigns.Run+'/03_Assembly/'+sample+'/assembly.fasta '\
+                +UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/03_Assembly/'+sample+'/assembly.fasta '\
                 +system.UseThreads)
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 11: Prokka annotation failed")
