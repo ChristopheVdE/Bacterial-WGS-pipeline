@@ -68,7 +68,7 @@ More advanced users could also run the real python wrapper-scripts directly thro
 
 ### Short read assembly
 <details>
-<summary>#### The input screen</summary>
+<summary>The input screen</summary>
 The screen in which you need to input the path looks like this:
 
 ![Screenshot](./Extra/Images/inputwindow.png)
@@ -87,7 +87,7 @@ The other files found in this repository are the codes used to create the Docker
 </details>
 
 <details>
-</summary>#### Preformed steps</summary>
+<summary>Preformed steps</summary>
 The Pipline is controlled by Snakemake, which itself is being ran in a container. Snakemake will read the rules/steps specified in the Snakefile and chain them togheter in the correct order for the analysis. 
 
 Snakemake will preform the following steps durig the analysis. Each step is specified as a rule in the Snakefile and will be executed in a docker container created for that specific task:
@@ -104,7 +104,7 @@ Snakemake will preform the following steps durig the analysis. Each step is spec
 </details>
 
 <details>
-<summary>#### Results</summary>
+<summary>Results</summary>
 The resulting file structure should look like this, with all rawdata and analysis data grouped per sample. To make reviewing the QC a bit easier, the MultiQC results for the full run (all samples) are stored sepparatly under QC-MultiQC/date. The full log of the snakemake program can be found under Snakemake_logs.
 
       data
