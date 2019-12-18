@@ -129,6 +129,48 @@ The resulting file structure should look like this, with all rawdata and analysi
        |--Snakemake_logs
 </details>        
 
+### Long read assembly
+Uses only the Minion samples.
+
+<details>
+  <summary>Input sreen</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Performed steps</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Results</summary>
+  Nothin here yet.
+</details>
+<details>
+  <summary>Bugs</summary>
+  PycoQC doesn't recognise the barcodes of multiplexed samples and thus can't give any usefull info on sample-quality
+</details>
+
+### Hybrid assembly
+Combines Short-read samples (Illumina) with Long-read samples (MinIon) in a hybrid assembly creating a high quality genome assembly.
+
+
+<details>
+  <summary>Input sreen</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Performed steps</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Results</summary>
+  Nothin here yet.
+</details>
+<details>
+  <summary>Bugs</summary>
+  Since this pipeline re-uses most of the steps from both the Short-read and Long-read pipelines, this pipeline still has some bugs:
+  - PycoQC doesn't recognise the barcodes of multiplexed samples and thus can't give any usefull info on sample-quality
+</details>
+
 ## Usefull commands:
   - to build containers out of the image-files (dockerfiles): $docker build --tag="imagename":"version" .
   - to run the created image: $docker run -it --rm "imagename":"version" "command"
