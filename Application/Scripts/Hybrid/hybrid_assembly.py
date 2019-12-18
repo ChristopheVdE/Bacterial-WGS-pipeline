@@ -15,6 +15,7 @@ from datetime import date, datetime
 from pathlib import Path
 import shutil
 import sys
+import importlib
 # ==========================================================================================================
 
 # CLASSES ==================================================================================================
@@ -113,14 +114,16 @@ class PathConverter:
         if SystemType == 'Windows':
             for data in [class1, class2]:
                 for key, value in data.__dict__.items():
-                    for letter in list(string.ascii_lowercase+string.ascii_uppercase):
-                        if value.startswith(letter+":/"):
-                            self.__dict__[key] = value.replace(letter+":/","/"+letter.lower()+"//").replace('\\','/')
-                        elif value.startswith(letter+":\\"):
-                            self.__dict__[key] = value.replace(letter+":\\","/"+letter.lower()+"//").replace('\\','/')
+                    if key in ["Illumina", "MinIon", "Adaptors", "Results", "Scripts", "StartGenes", "CorrespondingSamples"]:
+                        for letter in list(string.ascii_lowercase+string.ascii_uppercase):
+                            if value.startswith(letter+":/"):
+                                self.__dict__[key] = value.replace(letter+":/","/"+letter.lower()+"//").replace('\\','/')
+                            elif value.startswith(letter+":\\"):
+                                self.__dict__[key] = value.replace(letter+":\\","/"+letter.lower()+"//").replace('\\','/')
         else:
             for key, value in data.__dict__.items():
-                self.__dict__[key] = value
+                if key in ["Illumina", "MinIon", "Adaptors", "Results", "Scripts", "StartGenes", "CorrespondingSamples"]:
+                    self.__dict__[key] = value
 
 # Timer ----------------------------------------------------------------------------------------------------
 class Timer:
@@ -136,6 +139,20 @@ class Timer:
         self.__dict__[step] = "{}H, {}MM, {}SS".format(self.__dict__[step][0], self.__dict__[step][1], self.__dict__[step][2].split(".")[0])
 
 # FUNCTIONS==================================================================================================
+# List modules ----------------------------------------------------------------------------------------------
+def ListModules(path):
+    # List available modules --------------------------------------------------------------------------------
+    modules = []
+    for module in os.listdir(path):
+        if ".py" in module and module != "__init__.py":
+            modules.append(module.replace(".py", ""))
+    print(modules)
+    # Ask for module to import ------------------------------------------------------------------------------
+    toImport = input("module to import: ")
+    while not toImport in modules:
+        toImport = input("module to import: ")
+    return toImport
+
 # SHORT READ SAMPLE LIST CREATION----------------------------------------------------------------------------
 def sample_list(Illumina):
     global ids
@@ -148,19 +165,33 @@ def sample_list(Illumina):
 # ===========================================================================================================
 
 # ASSEMBLY PREPARATION: USER INPUT===========================================================================
+# Ask For "Settings" & "Organism"-file ----------------------------------------------------------------------
+settingsfile = input("Do you have a premade Settings-file? (y/n): ").lower()
+organismfile = input("Do you have a premade file containing info about the organism of which you have samples? (y/n): ").lower()
+
 # Get sytem info --------------------------------------------------------------------------------------------
 system = SystemInfo()
 system.TranslateSubprocesOutput()
 system.GetThreadsToUse()
 
+# import settings-file if exists -----------------------------------------------------------------------------
+if settingsfile == 'y':
+    sys.path.append(os.path.realpath(__file__) + '\Modules\Settings')
+    UserSettings = importlib.importLib.import_module(ListModules(os.path.realpath(__file__) + '\Modules\Settings'))
 # Get general settings --------------------------------------------------------------------------------------
-UserSettings = Settings()
-UserSettings.CheckLocations()
-UserSettings.CreateFoldersIfNotExist()
+else:
+    UserSettings = Settings()
+    UserSettings.CheckLocations()
+    UserSettings.CreateFoldersIfNotExist()
 
+# import organism-file if exists -----------------------------------------------------------------------------
+if organismfile == 'y':
+    sys.path.append(os.path.realpath(__file__) + '\Modules\OrganismData')
+    Organism = importlib.importLib.import_module(ListModules(os.path.realpath(__file__) + '\Modules\OrganismData'))
 # Get organism specific info --------------------------------------------------------------------------------
-Organism = OrganismData()
-Organism.CheckLocations()
+else:
+    Organism = OrganismData()
+    Organism.CheckLocations()
 
 # Convert folderpaths for mounting in docker-container when using Windows -----------------------------------
 ConvertedPaths = PathConverter(system.SystemType, UserSettings, Organism)
