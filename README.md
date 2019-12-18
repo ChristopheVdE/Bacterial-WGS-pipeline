@@ -4,7 +4,7 @@
 **This pipeline/ code was written for my bioinformatics-insternship in the Insititute of Tropical Medicine in Antwerp (Belgium). Please contact them if you want to use this pipeline and get the latest version.**
 
 ## Introduction
-Three containerised assembly pipelines for whole genome assemblies of bacterial DNA controlled by one wrapper-script.
+Three (partially) containerised assembly pipelines for whole genome assemblies of bacterial DNA controlled by one wrapper-script.
   - short read assembly (Illumina reads)
   - long read asembly (Oxford Nanopore: MinIon reads)
   - hybrid assembly (Illumina reads combined with MinIon reads)
@@ -41,13 +41,15 @@ In order to run the pipeline, the following steps need to be preformed.
 4) extract the files from the archive to the directory
  
 ## Pipeline
-### Starting the pipeline
-In Order to start the pipeline you only really need 1 file ("run_assembly.py") provided in this repository which you can execute through the command line. For those not familliar with a command line interface, there are 2 'auto-run scripts' provided, one for Windows users and one for Linux/MacOS users:
-
+### Starting and choosing the pipeline
+In Order to start the pipeline you need to execute one of the following files depending on your system. These files can be found in the 'Application'-folder.
 - For Linux/ MacOS users: LINUX_run-pipeline.sh
 - For Windows users: WINDOWS_run-pipeline.cmd
+You should now be able to execute the scripts by double clicking on them, after which each of them should ask for the required imputs. 
 
-For Linux/ MacOS users: the file permissions of the scripts might be changed after downloading. They should have executable rights in order to work. Enter "chmod 755 Linux_run-pipeline.sh" in a terminal to fix this. This guide give a non-terminal alternative for Mac-users, justkeep in mind that the file permissions should include 'execute' rights http://www.macinstruct.com/node/415.
+<details>
+<summary>Linux/ MacOS users:</summary>
+The file permissions of the scripts might be changed after downloading. They should have executable rights in order to work. Enter "chmod 755 Linux_run-pipeline.sh" in a terminal to fix this. This guide give a non-terminal alternative for Mac-users, justkeep in mind that the file permissions should include 'execute' rights http://www.macinstruct.com/node/415.
 
 Afterwards you might still need to specify that the file needs to be opened witht the terminal, this can be done like this:
 1)	The actual place where you need to input the rawdata-location
@@ -55,10 +57,18 @@ Afterwards you might still need to specify that the file needs to be opened with
 3)	This are some Windows specific tips so you shouldn’t see these lines
 4)	This is another input field to specify the threads/ CPU to be used for the analysis. This a more advanced option, I suggest that you just press enter and go with the suggested amount of threads when this question comes up.
 5)	If everything goes well you should see this orange text indicating that the analysis is starting.
+</details>
 
-You should now be able to execute the scripts by double clicking on them, after which each of them should ask for the location of the rawdata (see picture below). 
+More advanced users could also run the real python wrapper-scripts directly through the terminal. These scripts are:
+- hybrid_assembly.py         (found in: Application/Scripts/Hybrid)
+- long_read_assembly.py      (found in: Application/Scripts/Long_read)
+- short_read_assembly.py     (found in: Application/Scripts/Short_read)
 
-### The input screen
+**Make shure that Docker is running before executing any of the scripts**
+
+### Short read assembly
+<details>
+<summary>The input screen</summary>
 The screen in which you need to input the path looks like this:
 
 ![Screenshot](./Extra/Images/inputwindow.png)
@@ -74,9 +84,10 @@ When the analysis is complete you will get message displayed in the command line
 **WINDOWS**: before activating the scripts you will need to start docker. If you use docker-toolbox doudble click on the 'Docker quickstart terminal' shortcut to start up Docker. If you use 'Docker for windows/ Docker Desktop' or are using Linux, then docker will (probably) automatically start up during system startup and you can just run the scripts.
 
 The other files found in this repository are the codes used to create the Docker images for the containers and the scripts that are loaded into these containers. You don't need these since the containers will automatically be downloaded and 'installed' when the pipeline is ran for the first time (download from Docker-HUB).
+</details>
 
-### Short read assembly
-#### Preformed steps
+<details>
+<summary>Preformed steps</summary>
 The Pipline is controlled by Snakemake, which itself is being ran in a container. Snakemake will read the rules/steps specified in the Snakefile and chain them togheter in the correct order for the analysis. 
 
 Snakemake will preform the following steps durig the analysis. Each step is specified as a rule in the Snakefile and will be executed in a docker container created for that specific task:
@@ -90,8 +101,10 @@ Snakemake will preform the following steps durig the analysis. Each step is spec
     4) Spades
     5) File renaming
     6) Use results in Pathogenwatch.com (manual step)
-  
-#### Results
+</details>
+
+<details>
+<summary>Results</summary>
 The resulting file structure should look like this, with all rawdata and analysis data grouped per sample. To make reviewing the QC a bit easier, the MultiQC results for the full run (all samples) are stored sepparatly under QC-MultiQC/date. The full log of the snakemake program can be found under Snakemake_logs.
 
       data
@@ -114,7 +127,51 @@ The resulting file structure should look like this, with all rawdata and analysi
        |          |--MultiQC_rawdata
        |          |--MultiQC_trimmed
        |--Snakemake_logs
-        
+</details>        
+
+### Long read assembly
+Uses only the Minion samples.
+
+<details>
+  <summary>Input sreen</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Performed steps</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Results</summary>
+  Nothin here yet.
+</details>
+<details>
+  <summary>Bugs</summary>
+  PycoQC doesn't recognise the barcodes of multiplexed samples and thus can't give any usefull info on sample-quality
+</details>
+
+### Hybrid assembly
+Combines Short-read samples (Illumina) with Long-read samples (MinIon) in a hybrid assembly creating a high quality genome assembly.
+
+
+<details>
+  <summary>Input sreen</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Performed steps</summary>
+  Nothing here yet.
+</details>
+<details>
+  <summary>Results</summary>
+  Nothin here yet.
+</details>
+<details>
+  <summary>Bugs</summary>
+  Since this pipeline re-uses most of the steps from both the Short-read and Long-read pipelines, this pipeline still has some bugs:
+  
+  - PycoQC doesn't recognise the barcodes of multiplexed samples and thus can't give any usefull info on sample-quality
+</details>
+
 ## Usefull commands:
   - to build containers out of the image-files (dockerfiles): $docker build --tag="imagename":"version" .
   - to run the created image: $docker run -it --rm "imagename":"version" "command"
