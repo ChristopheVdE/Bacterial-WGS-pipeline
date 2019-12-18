@@ -168,6 +168,7 @@ Combines Short-read samples (Illumina) with Long-read samples (MinIon) in a hybr
 <details>
   <summary>Bugs</summary>
   Since this pipeline re-uses most of the steps from both the Short-read and Long-read pipelines, this pipeline still has some bugs:
+  
   - PycoQC doesn't recognise the barcodes of multiplexed samples and thus can't give any usefull info on sample-quality
 </details>
 
