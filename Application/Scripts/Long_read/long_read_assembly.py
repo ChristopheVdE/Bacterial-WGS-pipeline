@@ -109,7 +109,7 @@ def settings_parse(settings):
         elif "Start_genes" in line:
             options["Start_genes"] = line.replace('Start_genes=','').replace('\n','')
     options["Run"] = date.today().strftime("%Y%m%d")
-    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+    options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
     file.close()
     return options
 #PATH CORRECTION--------------------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ while error_count == 0:
             options["MinIon"] = input("Input location of MinIon sample files here: \n")   
             print("\nRESULTS"+'-'*93)
             options["Results"] = input("Input location to store the results here \n")
-            options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+            options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
             options["Run"] = date.today().strftime("%Y%m%d")
 #OPTIONAL INPUT----------------------------------------------------------------------------------------
             print("\n[LONG READS ASSEMBLY] OPTIONAL SETTINGS"+"="*61)

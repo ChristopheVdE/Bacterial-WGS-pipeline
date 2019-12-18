@@ -62,7 +62,7 @@ class Settigns:
         self.BarcodeKit             = input("which barcode-kit was used for the Minion samples: ")
         self.Results                = input("Where do you want to save the results: ")
         self.Run                    = date.today().strftime("%Y%m%d")
-        self.Scripts                = os.path.dirname(os.path.realpath(__file__)) + "\\Scripts\\Hybrid"
+        self.Scripts                = os.path.dirname(os.path.realpath(__file__))
 
     def CheckLocations(self):
         for key in self.__dict__.keys():
