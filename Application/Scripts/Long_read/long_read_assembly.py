@@ -109,7 +109,7 @@ def settings_parse(settings):
         elif "Start_genes" in line:
             options["Start_genes"] = line.replace('Start_genes=','').replace('\n','')
     options["Run"] = date.today().strftime("%Y%m%d")
-    options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+    options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
     file.close()
     return options
 #PATH CORRECTION--------------------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ while error_count == 0:
             options["MinIon"] = input("Input location of MinIon sample files here: \n")   
             print("\nRESULTS"+'-'*93)
             options["Results"] = input("Input location to store the results here \n")
-            options["Scripts"] = os.path.dirname(os.path.realpath(__file__)) + "/Scripts"
+            options["Scripts"] = os.path.dirname(os.path.realpath(__file__))
             options["Run"] = date.today().strftime("%Y%m%d")
 #OPTIONAL INPUT----------------------------------------------------------------------------------------
             print("\n[LONG READS ASSEMBLY] OPTIONAL SETTINGS"+"="*61)
@@ -240,8 +240,8 @@ while error_count == 0:
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/01_demultiplex.sh")
-        os.system('sh ./Scripts/Long_read/01_demultiplex.sh '\
+            os.system("dos2unix -q "+options["Scripts"]+"/01_demultiplex.sh")
+        os.system('sh ./Scripts/01_demultiplex.sh '\
             +options["MinIon"]+'/fastq/pass '\
             +options["Results"]+' '\
             +options["Run"]+' '\
@@ -260,8 +260,8 @@ while error_count == 0:
     if not my_file.is_file():
         #file doesn't exist -> pycoqc hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/02_pycoQC.sh") 
-        os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
+            os.system("dos2unix -q "+options["Scripts"]+"/02_pycoQC.sh") 
+        os.system('sh ./Scripts/02_pycoQC.sh '\
             +options["MinIon"]+'/fast5/pass '\
             +options["Results"]+'/Long_reads/'+options["Run"]+' '\
             +options["Threads"])
@@ -277,15 +277,15 @@ while error_count == 0:
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+options["Scripts"]+"/Long_read/03_Trimming.sh")
+            os.system("dos2unix -q "+options["Scripts"]+"/03_Trimming.sh")
         #demultiplex correct + trimming 
-        os.system('sh '+options["Scripts"]+'/Long_read/03_Trimming.sh '\
+        os.system('sh '+options["Scripts"]+'/03_Trimming.sh '\
             +options["Results"]+'/Long_reads/'+options["Run"]+'/01_Demultiplex '\
             +options["Results"]+' '\
             +options["Run"]+' '\
             +options["Threads"])
         #creation of summary table of demultiplexig results (guppy and porechop)
-        os.system("python3 "+options["Scripts"]+"/Long_read/04_demultiplex_compare.py "\
+        os.system("python3 "+options["Scripts"]+"/04_demultiplex_compare.py "\
             +options["Results"]+"/Long_reads/"+options["Run"]+"/01_Demultiplex/ "\
             +options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/ "\
             +options["Results"]+"/Long_reads/"+options["Run"]+"/02_QC/")
@@ -297,7 +297,7 @@ while error_count == 0:
     print("[COMPLETED] Hybrid assembly preparation: Long reads")
 #LONG READ ASSEMBLY--------------------------------------------------------------------------------------------
     if system == "UNIX":
-        os.system("dos2unix -q "+options["Scripts"]+"/Long_read/05_Unicycler.sh")
+        os.system("dos2unix -q "+options["Scripts"]+"/05_Unicycler.sh")
     print("\n[STARTING] Unicycler: Long read assembly")
     for bc in os.listdir(options["Results"]+"/Long_reads/"+options["Run"]+"/03_Trimming/"):
         bc = bc.replace('.fastq.gz','')
@@ -306,7 +306,7 @@ while error_count == 0:
             my_file = Path(options["Results"]+"/Long_reads/"+options["Run"]+"/04_Assembly/"+bc+"/assembly.fasta")
             if not my_file.is_file():
                 #file doesn't exist -> unicycle hasn't been run
-                os.system('sh ./Scripts/Long_read/05_Unicycler.sh '\
+                os.system('sh ./Scripts/05_Unicycler.sh '\
                     +options["Results"]+'/Long_reads/'+options["Run"]+' '\
                     +bc+' '\
                     +options["Threads"])
@@ -326,12 +326,12 @@ while error_count == 0:
         print("skipping Bandage step")
 #PROKKA-----------------------------------------------------------------------------------------------------
     if system == "UNIX":
-        os.system("dos2unix -q "+options["Scripts"]+"/Long_read/06_Prokka.sh")
+        os.system("dos2unix -q "+options["Scripts"]+"/06_Prokka.sh")
     print("\n[STARTING] Prokka: Long read assembly annotation")
     for sample in os.listdir(options["Results"]+"/Long_reads/03_Assembly/"):
         my_file = Path(options["Results"]+"/Long_reads/04_Prokka/"+sample+"/*.gff")
         if not my_file.is_file():
-            os.system('sh '+options["Scripts"]+'/Long_read/06_Prokka.sh '\
+            os.system('sh '+options["Scripts"]+'/06_Prokka.sh '\
                 +options["Results"]+'/Long_reads/04_Prokka/'+sample+' '\
                 +options["Genus"]+' '\
                 +options["Species"]+' '\
