@@ -106,7 +106,7 @@ class OrganismData:
                     self.__dict__[key] = input("[ERROR] File not found, please provide correct location of {}: ".format(key))
 
     def CreateOrganismFile(self):
-        file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\OrganismData\\OrganismInfo" + self.Genus + "_" + self.Species + ".py", "w")
+        file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\OrganismData\\OrganismInfo\\" + self.Genus + "_" + self.Species + ".py", "w")
         for key, value in self.__dict__.items():
             if key in ["Illumina", "MinIon", "Adaptors", "Results", "Scripts", "StartGenes", "CorrespondingSamples"]:
                 file.write("{} = r'{}'\n".format(key, value))
