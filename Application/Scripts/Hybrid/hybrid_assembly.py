@@ -84,7 +84,10 @@ class Settings:
     def CreateSettingsFile(self):
         file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\Settings\\Hybrid\\UserSettings" + self.Run + ".py", "w")
         for key, value in self.__dict__.items():
-            file.write("{} = '{}'\n".format(key, value))
+            if key in ["Illumina", "MinIon", "Adaptors", "Results", "Scripts", "StartGenes", "CorrespondingSamples"]:
+                file.write("{} = r'{}'\n".format(key, value))
+            else:
+                file.write("{} = r'{}'\n".format(key, value))
         file.close()
 
 # Organism specific settings -------------------------------------------------------------------------------
@@ -105,7 +108,10 @@ class OrganismData:
     def CreateOrganismFile(self):
         file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\OrganismData\\OrganismInfo" + self.Genus + "_" + self.Species + ".py", "w")
         for key, value in self.__dict__.items():
-            file.write("{} = '{}'\n".format(key, value))
+            if key in ["Illumina", "MinIon", "Adaptors", "Results", "Scripts", "StartGenes", "CorrespondingSamples"]:
+                file.write("{} = r'{}'\n".format(key, value))
+            else:
+                file.write("{} = '{}'\n".format(key, value))
         file.close()
 
 # Converst Windows folder paths for mountig in Docker ------------------------------------------------------
@@ -183,6 +189,7 @@ else:
     UserSettings = Settings()
     UserSettings.CheckLocations()
     UserSettings.CreateFoldersIfNotExist()
+    UserSettings.CreateSettingsFile()
 
 # import organism-file if exists -----------------------------------------------------------------------------
 if organismfile == 'y':
@@ -192,13 +199,10 @@ if organismfile == 'y':
 else:
     Organism = OrganismData()
     Organism.CheckLocations()
+    Organism.CreateOrganismFile()
 
 # Convert folderpaths for mounting in docker-container when using Windows -----------------------------------
 ConvertedPaths = PathConverter(system.SystemType, UserSettings, Organism)
-
-# Save the info in the corresponding file -------------------------------------------------------------------
-UserSettings.CreateSettingsFile()
-Organism.CreateOrganismFile()
 
 # Activate Timer: Full analysis -----------------------------------------------------------------------------
 timer = Timer()
