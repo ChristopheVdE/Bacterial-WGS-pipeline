@@ -50,7 +50,7 @@ class SystemInfo:
             print("\nYou might still be able to increase the amount of threads available to Docker. Check your Docker or Virtual-Machine Settings\n")
         # Ask user for the amount of threads to use for the analysis
         self.UseThreads = str(input("How many threads do you want to use for the analysis (min = 1, max = {}): ".format(self.DockerThreads)))
-        while self.UseThreads not in range(1, self.DockerThreads + 1):
+        while int(self.UseThreads) not in range(1, int(self.DockerThreads) + 1):
             self.UseThreads = str(input("[ERROR] Chosen amount of threads is outside the possible range (min = 1, max = {}): ".format(self.DockerThreads)))
 
 # User settings --------------------------------------------------------------------------------------------
