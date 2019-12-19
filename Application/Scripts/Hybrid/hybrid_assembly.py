@@ -177,7 +177,7 @@ system.GetThreadsToUse()
 # import settings-file if exists -----------------------------------------------------------------------------
 if settingsfile == 'y':
     sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\Settings\Hybrid')
-    UserSettings = importlib.importlib.import_module(ListModules(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\Settings\Hybrid'))
+    UserSettings = importlib.import_module(ListModules(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\Settings\Hybrid'))
 # Get general settings --------------------------------------------------------------------------------------
 else:
     UserSettings = Settings()
@@ -187,7 +187,7 @@ else:
 # import organism-file if exists -----------------------------------------------------------------------------
 if organismfile == 'y':
     sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\OrganismData\OrganismInfo')
-    Organism = importlib.importlib.import_module(ListModules(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\OrganismData\OrganismInfo'))
+    Organism = importlib.import_module(ListModules(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\OrganismData\OrganismInfo'))
 # Get organism specific info --------------------------------------------------------------------------------
 else:
     Organism = OrganismData()
