@@ -47,7 +47,7 @@ class SystemInfo:
     def GetThreadsToUse(self):
         # Tip to increase maximum aoount of threads for Docker
         if self.DockerThreads < self.SystemThreads:
-            print("You might still be able to increase the amount of threads available to Docker. Check your Docker or Virtual-Machine Settings")
+            print("\nYou might still be able to increase the amount of threads available to Docker. Check your Docker or Virtual-Machine Settings\n")
         # Ask user for the amount of threads to use for the analysis
         self.UseThreads = int(input("How many threads do you want to use for the analysis (min = 1, max = {}): ".format(self.DockerThreads)))
         while self.UseThreads not in range(1, self.DockerThreads + 1):
@@ -56,12 +56,12 @@ class SystemInfo:
 # User settings --------------------------------------------------------------------------------------------
 class Settings:
     def __init__(self):
-        self.Illumina               = input("location of Illumina samples: ")
-        self.MinIon                 = input("location of Minion samples: ")
-        self.Results                = input("Where do you want to save the results: ")
-        self.CorrespondingSamples   = input("Input location of text file containing info on wich Illumina sample corresponds with which MinIon sample: ")
-        self.Adaptors               = input("location of the adaptorfile for trimming: ")
-        self.BarcodeKit             = input("which barcode-kit was used for the Minion samples: ")
+        self.Illumina               = input("\nLocation of Illumina samples:\n")
+        self.MinIon                 = input("Location of Minion samples:\n ")
+        self.Results                = input("Where do you want to save the results:\n ")
+        self.CorrespondingSamples   = input("Input location of text file containing info on wich Illumina sample corresponds with which MinIon sample:\n ")
+        self.Adaptors               = input("Location of the adaptorfile for trimming:\n ")
+        self.BarcodeKit             = input("Which barcode-kit was used for the Minion samples: ")
         self.Run                    = date.today().strftime("%Y%m%d")
         self.Scripts                = os.path.dirname(os.path.realpath(__file__))
 
@@ -90,10 +90,10 @@ class Settings:
 # Organism specific settings -------------------------------------------------------------------------------
 class OrganismData:
     def __init__(self):
+        self.Kingdom = input("\nKingdom of sample-organism: ")
         self.Genus   = input("Genus of sample-organism: ")
         self.Species = input("Species of sample-organism: ")
-        self.Kingdom = input("Kingdom of sample-organism: ")
-        self.StartGenes = input("Location of multifasta containing start-genes for annotation: ")
+        self.StartGenes = input("Location of multifasta containing start-genes for annotation:\n")
 
     def CheckLocations(self):
         for key in self.__dict__.keys():
@@ -103,7 +103,7 @@ class OrganismData:
                     self.__dict__[key] = input("[ERROR] File not found, please provide correct location of {}: ".format(key))
 
     def CreateOrganismFile(self):
-        file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\OrganismData\\OrganismInfo" + self.Species + "_" + self.Kingdom + ".py", "w")
+        file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\OrganismData\\OrganismInfo" + self.Genus + "_" + self.Species + ".py", "w")
         for key, value in self.__dict__.items():
             file.write("{} = '{}'\n".format(key, value))
         file.close()
