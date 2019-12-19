@@ -228,8 +228,8 @@ copy = 'docker run -it --rm \
     -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
     -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
     christophevde/ubuntu_bash:v2.2_stable \
-    /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh \
-    && sh /home/Scripts/Hybrid/Short_read/01_copy_rawdata.sh '+UserSettings.Run+'"'
+    /bin/bash -c "dos2unix -q /home/Scripts/Short_read/01_copy_rawdata.sh \
+    && sh /home/Scripts/Short_read/01_copy_rawdata.sh '+UserSettings.Run+'"'
 os.system(copy)
 print("Done")
 
@@ -250,8 +250,8 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/fastqc:v2.2_stable \
-                /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_FastQC_Raw.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
+                /bin/bash -c "dos2unix -q /home/Scripts/Short_read/QC01_FastQC_Raw.sh \
+                && /home/Scripts/Short_read/QC01_FastQC_Raw.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
             if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 1: FastQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -281,8 +281,8 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
-                /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_FullRun.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_FullRun.sh '+UserSettings.Run+'"')
+                /bin/bash -c "dos2unix -q /home/Scripts/Short_read/QC01_MultiQC_Raw_FullRun.sh \
+                && /home/Scripts/Short_read/QC01_MultiQC_Raw_FullRun.sh '+UserSettings.Run+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -303,8 +303,8 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
-                /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh \
-                && /home/Scripts/Hybrid/Short_read/QC01_MultiQC_Raw_oneSample.sh '+sample+' '+UserSettings.Run+'"')
+                /bin/bash -c "dos2unix -q /home/Scripts/Short_read/QC01_MultiQC_Raw_oneSample.sh \
+                && /home/Scripts/Short_read/QC01_MultiQC_Raw_oneSample.sh '+sample+' '+UserSettings.Run+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 2: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -322,8 +322,8 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/trimmomatic:v2.2_stable \
-                /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh \
-                && /home/Scripts/Hybrid/Short_read/02_runTrimmomatic.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
+                /bin/bash -c "dos2unix -q /home/Scripts/Short_read/02_runTrimmomatic.sh \
+                && /home/Scripts/Short_read/02_runTrimmomatic.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
         if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 3: TRIMMOMATIC; trimming adaptors form reads (short reads)")
                 error_count +=1
@@ -341,8 +341,8 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/fastqc:v2.2_stable \
-                /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh \
-                && /home/Scripts/Hybrid/Short_read/QC02_FastQC_Trim.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
+                /bin/bash -c "dos2unix -q /home/Scripts/Short_read/QC02_FastQC_Trim.sh \
+                && /home/Scripts/Short_read/QC02_FastQC_Trim.sh '+sample+' '+UserSettings.Run+' '+system.UseThreads+'"')
             if not my_file1.is_file() or not my_file2.is_file():
                 errors.append("[ERROR] STEP 4: FastQC; quality control trimmed data (short reads)")
                 error_count +=1
@@ -371,8 +371,8 @@ while error_count == 0:
             -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
             -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
             christophevde/multiqc:v2.2_stable \
-            /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh \
-            && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_FullRun.sh '+UserSettings.Run+'"')
+            /bin/bash -c "dos2unix -q /home/Scripts/Short_read/QC02_MultiQC_Trim_FullRun.sh \
+            && /home/Scripts/Short_read/QC02_MultiQC_Trim_FullRun.sh '+UserSettings.Run+'"')
         if not my_file.is_file():
             errors.append("[ERROR] STEP 5: MultiQC; quality control trimmed data (short reads)")
             error_count +=1
@@ -393,8 +393,8 @@ while error_count == 0:
                 -v "'+ConvertedPaths.Scripts+':/home/Scripts/" \
                 -v "'+ConvertedPaths.Results+':/home/Pipeline/" \
                 christophevde/multiqc:v2.2_stable \
-                /bin/bash -c "dos2unix -q /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_oneSample.sh \
-                && /home/Scripts/Hybrid/Short_read/QC02_MultiQC_Trim_oneSample.sh '+sample+' '+UserSettings.Run+'"')
+                /bin/bash -c "dos2unix -q /home/Scripts/Short_read/QC02_MultiQC_Trim_oneSample.sh \
+                && /home/Scripts/Short_read/QC02_MultiQC_Trim_oneSample.sh '+sample+' '+UserSettings.Run+'"')
             if not my_file.is_file():
                 errors.append("[ERROR] STEP 5: MultiQC; quality control rawdata (short reads)")
                 error_count +=1
@@ -411,8 +411,8 @@ while error_count == 0:
     if not my_file.is_file():
         #file doesn't exist -> guppy demultiplex hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/Long_read/01_demultiplex.sh")
-        os.system('sh ./Scripts/Hybrid/Long_read/01_demultiplex.sh '\
+            os.system("dos2unix -q "+UserSettings.Scripts+"/Long_read/01_demultiplex.sh")
+        os.system('sh ./Scripts/Long_read/01_demultiplex.sh '\
             +UserSettings.MinIon+'/fastq/pass '\
             +UserSettings.Results+' '\
             +UserSettings.Run+' '\
@@ -431,8 +431,8 @@ while error_count == 0:
     if not my_file.is_file():
         #file doesn't exist -> pycoqc hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/Long_read/02_pycoQC.sh") 
-        os.system('sh ./Scripts/Hybrid/Long_read/02_pycoQC.sh '\
+            os.system("dos2unix -q "+UserSettings.Scripts+"/Long_read/02_pycoQC.sh") 
+        os.system('sh ./Scripts/Long_read/02_pycoQC.sh '\
             +UserSettings.MinIon+'/fast5/pass '\
             +UserSettings.Results+'/Hybrid/'+UserSettings.Run+' '\
             +system.UseThreads)
@@ -448,15 +448,15 @@ while error_count == 0:
     if not my_file.is_file():
         #file doesn't exist -> porechop trimming hasn't been run
         if system == "UNIX":
-            os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/Long_read/03_Trimming.sh")
+            os.system("dos2unix -q "+UserSettings.Scripts+"/Long_read/03_Trimming.sh")
         #demultiplex correct + trimming 
-        os.system('sh '+UserSettings.Scripts+'/Hybrid/Long_read/03_Trimming.sh '\
+        os.system('sh '+UserSettings.Scripts+'/Long_read/03_Trimming.sh '\
             +UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/02_Long_reads/01_Demultiplex '\
             +UserSettings.Results+' '\
             +UserSettings.Run+' '\
             +system.UseThreads)
         #creation of summary table of demultiplexig results (guppy and porechop)
-        os.system("python3 "+UserSettings.Scripts+"/Hybrid/Long_read/04_demultiplex_compare.py "\
+        os.system("python3 "+UserSettings.Scripts+"/Long_read/04_demultiplex_compare.py "\
             +UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/01_Demultiplex/ "\
             +UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/03_Trimming/ "\
             +UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/02_Long_reads/02_QC/")
@@ -485,13 +485,13 @@ while error_count == 0:
     #EXECUTE UNICYCLER---------------------------------------------------------------------------------------
     print("\n[HYBRID][ASSEMBLY] Unicycler: building hybrid assembly")
     if system == "UNIX":
-        os.system("dos2unix -q "+UserSettings.Scripts+"/Long_read/05_Unicycler.sh")
+        os.system("dos2unix -q "+UserSettings.Scripts+"/01_Unicycler.sh")
     for key, value in samples.items():
         #key = barcode; value = Illumina ID
         my_file = Path(UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/03_Assembly/'+value+'/assembly.gfa')
         if not my_file.is_file():
             print("Creating hybrid assembly with Illumina sample: "+value+" and MinIon sample with Barcode: "+key)
-            os.system('sh '+UserSettings.Scripts+'/Hybrid/01_Unicyler.sh'\
+            os.system('sh '+UserSettings.Scripts+'/01_Unicyler.sh'\
                 +value+' '\
                 +key+' '\
                 +UserSettings.Results+'/Hybrid/'+UserSettings.Run+' '\
@@ -515,11 +515,11 @@ while error_count == 0:
 #PROKKA-----------------------------------------------------------------------------------------------------
     print("\n[HYBRID][ANNOTATION] Prokka: annotating assembly")
     if system == "UNIX":
-        os.system("dos2unix -q "+UserSettings.Scripts+"/Hybrid/02_Prokka.sh")
+        os.system("dos2unix -q "+UserSettings.Scripts+"/02_Prokka.sh")
     for sample in os.listdir(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/03_Assembly/"):
         my_file = Path(UserSettings.Results+"/Hybrid/"+UserSettings.Run+"/04_Prokka/"+sample+"/*.gff")
         if not my_file.is_file():
-            os.system('sh '+UserSettings.Scripts+'/Hybrid/02_Prokka.sh '\
+            os.system('sh '+UserSettings.Scripts+'/02_Prokka.sh '\
                 +UserSettings.Results+'/Hybrid/'+UserSettings.Run+'/04_Prokka/'+sample+' '\
                 +Organism.Genus+' '\
                 +Organism.Species+' '\
