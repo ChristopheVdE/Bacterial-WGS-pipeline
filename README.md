@@ -188,7 +188,7 @@ Combines Short-read samples (Illumina) with Long-read samples (MinIon) in a hybr
   
       10. Assembly: uses Unicycler
       11. Assembly visualisation (not part of the scriptn this is a manual process using e.g: Bandage)
-      1. Annotation: uses Prokka
+      12. Annotation: uses Prokka
   
 </details>
 <details>
