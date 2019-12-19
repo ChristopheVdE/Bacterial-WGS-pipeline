@@ -131,6 +131,7 @@ The resulting file structure should look like this, with all rawdata and analysi
 
 ### Long read assembly
 Uses only the Minion samples.
+Pipeline doesn't contain any Docker containers.
 
 <details>
   <summary>Input sreen</summary>
@@ -138,7 +139,15 @@ Uses only the Minion samples.
 </details>
 <details>
   <summary>Performed steps</summary>
-  Nothing here yet.
+  
+    0. Basecalling (not part of the script, this is done in real time during the MinIon sequencing)
+    1. Demultiplexing: uses Guppy
+    2. QC: uses PycoQC
+    3. Trimming: uses Porechop
+    4. Assembly: uses Unicycler
+    5. Assembly visualisation (not part of the scriptn this is a manual process using e.g: Bandage)
+    6. Annotation: uses Prokka
+  
 </details>
 <details>
   <summary>Results</summary>
@@ -159,7 +168,28 @@ Combines Short-read samples (Illumina) with Long-read samples (MinIon) in a hybr
 </details>
 <details>
   <summary>Performed steps</summary>
-  Nothing here yet.
+  Short reads:
+  
+      0. copying files for  original location to the current-analysis folder (data/)
+      1. QC on raw data using FastQC
+      2. QC on raw data using MultiQC
+      3. Trimmomatic
+      4. QC on trimmed data using FastQC
+      5. QC on trimmed data usisg MultiQC
+
+  Long reads:
+  
+      6. Basecalling (not part of the script, this is done in real time during the MinIon sequencing)
+      7. Demultiplexing: uses Guppy
+      8. QC: uses PycoQC
+      9. Trimming: uses Porechop
+      
+  Hybrid assembly:
+  
+      10. Assembly: uses Unicycler
+      11. Assembly visualisation (not part of the scriptn this is a manual process using e.g: Bandage)
+      1. Annotation: uses Prokka
+  
 </details>
 <details>
   <summary>Results</summary>
