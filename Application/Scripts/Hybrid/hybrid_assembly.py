@@ -82,7 +82,7 @@ class Settings:
             os.makedirs(i, exist_ok=True)
 
     def CreateSettingsFile(self):
-        file = open(os.path.dirname(os.path.realpath(__file__)) + "\\Modules\\Settings\\UserSettings" + self.Run + ".py", "w")
+        file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\Settings\\Hybrid\\UserSettings" + self.Run + ".py", "w")
         for key, value in self.__dict__.items():
             file.write("{} = '{}'\n".format(key, value))
         file.close()
@@ -103,7 +103,7 @@ class OrganismData:
                     self.__dict__[key] = input("[ERROR] File not found, please provide correct location of {}: ".format(key))
 
     def CreateOrganismFile(self):
-        file = open(os.path.dirname(os.path.realpath(__file__)) + "\\Modules\\OrganismData\\" + self.Species + ".py", "w")
+        file = open(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + "\\Modules\\OrganismData\\OrganismInfo" + self.Species + "_" + self.Kingdom + ".py", "w")
         for key, value in self.__dict__.items():
             file.write("{} = '{}'\n".format(key, value))
         file.close()
@@ -176,8 +176,8 @@ system.GetThreadsToUse()
 
 # import settings-file if exists -----------------------------------------------------------------------------
 if settingsfile == 'y':
-    sys.path.append(os.path.realpath(__file__) + '\Modules\Settings')
-    UserSettings = importlib.importLib.import_module(ListModules(os.path.realpath(__file__) + '\Modules\Settings'))
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\Settings\Hybrid')
+    UserSettings = importlib.importLib.import_module(ListModules(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\Settings\Hybrid'))
 # Get general settings --------------------------------------------------------------------------------------
 else:
     UserSettings = Settings()
@@ -186,8 +186,8 @@ else:
 
 # import organism-file if exists -----------------------------------------------------------------------------
 if organismfile == 'y':
-    sys.path.append(os.path.realpath(__file__) + '\Modules\OrganismData')
-    Organism = importlib.importLib.import_module(ListModules(os.path.realpath(__file__) + '\Modules\OrganismData'))
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\OrganismData\OrganismInfo')
+    Organism = importlib.importLib.import_module(ListModules(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))) + '\Modules\OrganismData\OrganismInfo'))
 # Get organism specific info --------------------------------------------------------------------------------
 else:
     Organism = OrganismData()
