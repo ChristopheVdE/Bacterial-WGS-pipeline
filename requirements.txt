@@ -1,5 +1,5 @@
-porechop
-unicycler
+rrwick/porechop
+rrwick/unicycler
 pycoqc
-prokka
-bandage
+tseemann/prokka
+rrwick/bandage
