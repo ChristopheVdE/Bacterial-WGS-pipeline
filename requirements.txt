@@ -1,0 +1,5 @@
+porechop
+unicycler
+pycoqc
+prokka
+bandage
